@@ -1,0 +1,40 @@
+{
+  "name": "n-queue",
+  "version": "0.1.0",
+  "description": "NodeJS Redis Queue",
+  "author": "Gregory Langlais",
+  "private": false,
+  "keywords": [
+    "n-queue",
+    "queue",
+    "redis",
+    "distributed",
+    "workers"
+  ],
+  "main": "src/n-queue",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gregl83/n-queue.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gregl83/n-queue/issues"
+  },
+  "homepage": "https://github.com/gregl83/n-queue",
+  "scripts": {
+    "start": "./bin/n-queue",
+    "test": "mocha --require test/support/env --reporter spec --bail --check-leaks test/"
+  },
+  "devDependencies": {
+    "mocha": "2.2.x",
+    "should": "5.2.x",
+    "mockery": "1.4.X",
+    "sinon": "1.14.x"
+  },
+  "dependencies": {
+    "commander": "2.7.x",
+    "config": "1.12.x",
+    "winston": "0.9.x",
+    "async": "0.9.x"
+  },
+  "license": "MIT"
+}

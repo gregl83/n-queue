@@ -1,0 +1,23 @@
+# Operating System
+*.swp
+pids
+*.pid
+*.seed
+
+# IDEs
+.idea/
+
+# Coverage Testing
+lib-cov
+coverage
+
+# NPM
+build/Release
+node_modules
+
+# Application Logs
+log/*
+*.log
+
+# Application Local Configuration
+local.json
