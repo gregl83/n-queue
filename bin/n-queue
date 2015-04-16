@@ -10,3 +10,27 @@ process.env.NODE_CONFIG_DIR = __dirname + '/../config';
 var command = require('commander');
 var config = require('config');
 var winston = require('winston');
+
+var packageJSON = require('../package.json');
+
+
+// setup commander options and menu
+command
+  .version(packageJSON.version)
+  .description(packageJSON.description)
+  .option('-d, --debug', 'debug mode')
+  .parse(process.argv);
+
+// get logger and setup log levels
+var log = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({
+      level: 'info',
+      timestamp: true,
+      colorize: true
+    })
+  ]
+});
+
+// check for debug mode flag
+if (command.debug) log.transports.console.level = 'debug';
