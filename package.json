@@ -34,7 +34,8 @@
     "commander": "2.7.x",
     "config": "1.12.x",
     "winston": "0.9.x",
-    "async": "0.9.x"
+    "async": "0.9.x",
+    "redis": "0.12.x"
   },
   "license": "MIT"
 }

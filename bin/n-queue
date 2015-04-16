@@ -34,3 +34,5 @@ var log = new (winston.Logger)({
 
 // check for debug mode flag
 if (command.debug) log.transports.console.level = 'debug';
+
+// todo scheduler will run from cli
