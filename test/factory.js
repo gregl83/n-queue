@@ -23,14 +23,76 @@ describe('factory', function() {
     mockery.disable();
   });
 
-  it('create client', function(done) {
+  it('create client sans options', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+
+    mockRedis.createClient.calledWithExactly(host, port);
+
+    nQueue.createClient(host, port);
+
+    done();
+  });
+
+  it('create client empty options', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
     var options = {};
 
+    mockRedis.createClient.calledWithExactly(host, port, options);
+
     nQueue.createClient(host, port, options);
 
+    done();
+  });
+
+  it('create client invalid options', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var options = ["a", "b", "c"];
+
     mockRedis.createClient.calledWithExactly(host, port, options);
+
+    should.throws(function() {
+      nQueue.createClient(host, port, options);
+    });
+
+    done();
+  });
+
+  it('create client invalid host', function(done) {
+    var host = 127001;
+    var port = 6379;
+
+    mockRedis.createClient.calledWithExactly(host, port);
+
+    should.throws(function() {
+      nQueue.createClient(host, port);
+    });
+
+    done();
+  });
+
+  it('create client port string number', function(done) {
+    var host = "127.0.0.1";
+    var port = "6379";
+
+    mockRedis.createClient.calledWithExactly(host, port);
+
+    nQueue.createClient(host, port);
+
+    done();
+  });
+
+  it('create client invalid port', function(done) {
+    var host = "127.0.0.1";
+    var port = [6379];
+
+    mockRedis.createClient.calledWithExactly(host, port);
+
+    should.throws(function() {
+      nQueue.createClient(host, port);
+    });
 
     done();
   });
