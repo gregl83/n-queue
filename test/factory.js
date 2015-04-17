@@ -21,7 +21,7 @@ var nQueue = require('../');
 
 describe('factory', function() {
   after(function() {
-    mockery.disable();
+    mockery.deregisterAll();
   });
 
   afterEach(function() {

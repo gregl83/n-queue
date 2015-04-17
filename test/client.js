@@ -21,8 +21,23 @@ var Client = require('../src/Client');
 
 describe('client', function() {
   after(function() {
-    mockery.disable();
+    mockery.deregisterAll();
   });
 
-  // todo TDD client
+  it('new client redis server', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var options = {};
+
+    var clientMock = {};
+
+    redisMock.createClient.returns(clientMock);
+    redisMock.createClient.calledWithExactly(host, port, options);
+
+    var client = new Client(host, port);
+
+    (client.store).should.be.eql(clientMock);
+
+    done();
+  });
 });
