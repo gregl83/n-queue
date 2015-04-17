@@ -2,8 +2,6 @@ var should = require('should');
 var mockery = require('mockery');
 var sinon = require('sinon');
 
-var nQueue = require('../');
-
 
 mockery.enable({
   useCleanCache: true,
@@ -11,11 +9,14 @@ mockery.enable({
   warnOnUnregistered: false
 });
 
-var mockRedis = {
-  createClient: function() {}
-};
-sinon.stub(mockRedis, "createClient");
-mockery.registerMock('redis', mockRedis);
+exports.Client = function() {/* Client constructor Mock */};
+
+var ClientSpy = sinon.spy(exports, 'Client');
+
+mockery.registerMock('./Client', ClientSpy);
+
+
+var nQueue = require('../');
 
 
 describe('factory', function() {
@@ -23,11 +24,15 @@ describe('factory', function() {
     mockery.disable();
   });
 
+  afterEach(function() {
+    ClientSpy.reset();
+  });
+
   it('create client sans options', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
 
-    mockRedis.createClient.calledWithExactly(host, port);
+    ClientSpy.calledWithExactly(host, port);
 
     nQueue.createClient(host, port);
 
@@ -39,7 +44,7 @@ describe('factory', function() {
     var port = 6379;
     var options = {};
 
-    mockRedis.createClient.calledWithExactly(host, port, options);
+    ClientSpy.calledWithExactly(host, port, options);
 
     nQueue.createClient(host, port, options);
 
@@ -51,7 +56,7 @@ describe('factory', function() {
     var port = 6379;
     var options = ["a", "b", "c"];
 
-    mockRedis.createClient.calledWithExactly(host, port, options);
+    ClientSpy.calledWithExactly(host, port, options);
 
     should.throws(function() {
       nQueue.createClient(host, port, options);
@@ -64,7 +69,7 @@ describe('factory', function() {
     var host = 127001;
     var port = 6379;
 
-    mockRedis.createClient.calledWithExactly(host, port);
+    ClientSpy.calledWithExactly(host, port);
 
     should.throws(function() {
       nQueue.createClient(host, port);
@@ -77,7 +82,7 @@ describe('factory', function() {
     var host = "127.0.0.1";
     var port = "6379";
 
-    mockRedis.createClient.calledWithExactly(host, port);
+    ClientSpy.calledWithExactly(host, port);
 
     nQueue.createClient(host, port);
 
@@ -88,7 +93,7 @@ describe('factory', function() {
     var host = "127.0.0.1";
     var port = [6379];
 
-    mockRedis.createClient.calledWithExactly(host, port);
+    ClientSpy.calledWithExactly(host, port);
 
     should.throws(function() {
       nQueue.createClient(host, port);
