@@ -5,7 +5,7 @@ var Client = require('./Client');
  *
  * @param {string} host
  * @param {string|number} port
- * @param {object} options
+ * @param {object=obj} options
  * @throws {Error} invalid params
  * @returns {Client}
  */
