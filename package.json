@@ -11,7 +11,7 @@
     "distributed",
     "workers"
   ],
-  "main": "src/n-queue",
+  "main": "src/Factory",
   "repository": {
     "type": "git",
     "url": "https://github.com/gregl83/n-queue.git"
