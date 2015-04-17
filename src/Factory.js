@@ -1,5 +1,14 @@
 var Client = require('./Client');
 
+/**
+ * Creates a new nQueue Client
+ *
+ * @param {string} host
+ * @param {string|number} port
+ * @param {object} options
+ * @throws {Error} invalid params
+ * @returns {Client}
+ */
 module.exports.createClient = function(host, port, options) {
   if ('string' !== typeof host) throw new Error('host must be a string');
 
