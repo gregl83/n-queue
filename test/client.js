@@ -40,4 +40,8 @@ describe('client', function() {
 
     done();
   });
+
+  // todo push tests
+
+  // todo shift tests
 });

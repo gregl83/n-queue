@@ -1,4 +1,6 @@
+var config = require('config');
 var redis = require('redis');
+
 
 /**
  * nQueue Client for all queue CRUD operations
@@ -13,6 +15,31 @@ function Client(host, port, options) {
   self.store = redis.createClient(port, host, options);
 }
 
-// todo write n-queue client
+
+/**
+ * Push task to tail of queue
+ *
+ * @param {string} queue name
+ * @param {number} priority level of task
+ * @param {object} task to queue
+ * @param {function} cb
+ * @async
+ */
+Client.prototype.push = function(queue, priority, task, cb) {
+  // todo
+};
+
+
+/**
+ * Get task from head of queue
+ *
+ * @param {string} queue name
+ * @param cb
+ * @async
+ */
+Client.prototype.shift = function(queue, cb) {
+  // todo
+};
+
 
 module.exports = Client;
