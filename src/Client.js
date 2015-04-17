@@ -10,7 +10,6 @@ var redis = require('redis');
  */
 function Client(host, port, options) {
   var self = this;
-  console.log('>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<');
   self.store = redis.createClient(port, host, options);
 }
 
