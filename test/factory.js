@@ -34,7 +34,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port);
 
-    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.object);
+    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.string, sinon.match.object);
 
     done();
   });
@@ -46,7 +46,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port, options);
 
-    sinon.assert.calledWithExactly(ClientSpy, host, port, options);
+    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.string, options);
 
     done();
   });
@@ -84,7 +84,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port);
 
-    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.object);
+    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.string, sinon.match.object);
 
     done();
   });

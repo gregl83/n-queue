@@ -4,7 +4,7 @@ var Duplex = require('stream').Duplex;
 var should = require('should');
 var mockery = require('mockery');
 var sinon = require('sinon');
-
+var config = require('config');
 
 mockery.enable({
   useCleanCache: true,
@@ -30,14 +30,15 @@ describe('client', function() {
   it('new client redis server', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
+    var queue = 'queue';
     var options = {};
 
     var clientMock = {};
-
     redisMock.createClient.returns(clientMock);
-    redisMock.createClient.calledWithExactly(host, port, options);
 
-    var client = new Client(host, port);
+    var client = new Client(host, port, queue, {});
+
+    redisMock.createClient.calledWithExactly(host, port, options);
 
     (client).should.be.instanceOf(Duplex);
     (client.store).should.be.eql(clientMock);
@@ -48,9 +49,10 @@ describe('client', function() {
   it('push task to queue', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
+    var queue = 'queue';
     var options = {};
 
-    var client = new Client(host, port, options);
+    var client = new Client(host, port, queue, options);
 
     var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
@@ -77,9 +79,10 @@ describe('client', function() {
   it('push task array to queue', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
+    var queue = 'queue';
     var options = {};
 
-    var client = new Client(host, port, options);
+    var client = new Client(host, port, queue, options);
 
     var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
@@ -109,9 +112,10 @@ describe('client', function() {
   it('push task to queue _write error', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
+    var queue = 'queue';
     var options = {};
 
-    var client = new Client(host, port, options);
+    var client = new Client(host, port, queue, options);
 
     var error = new Error('error pushing task to queue');
 

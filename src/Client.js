@@ -11,22 +11,35 @@ var redis = require('redis');
  *
  * @param {string} host
  * @param {string|number} port
+ * @param {string} queue
  * @param {object} options
  * @constructor
  * @augments Stream
  */
-function Client(host, port, options) {
+function Client(host, port, queue, options) {
   var self = this;
 
   Duplex.call(self, {});  // todo setup stream options
 
-  // todo set queue name here
+  self.keyspace = Client.getKeyspace(options.prefix, queue);
 
-  self.store = redis.createClient(port, host, options);
+  self.store = redis.createClient(port, host);
 }
 
 
 util.inherits(Client, Duplex);
+
+
+/**
+ * Get Redis Keyspace for Queue
+ * If prefix is undefined this value will be retrieved from the default.json config
+ *
+ * @param {string} prefix
+ * @param {string} queue
+ */
+Client.getKeyspace = function(prefix, queue) {
+  return (('undefined' !== typeof prefix) ? prefix : config.get('prefix')) + ':' + queue;
+};
 
 
 /**

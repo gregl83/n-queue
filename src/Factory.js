@@ -1,3 +1,5 @@
+var config = require('config');
+
 var Client = require('./Client');
 
 /**
@@ -17,5 +19,8 @@ module.exports.createClient = function(host, port, options) {
   if ('undefined' === typeof options) options = {};
   else if ('object' !== typeof options || Array.isArray(options)) throw new Error('options must be an object');
 
-  return new Client(host, port, options);
+  // get queue from options of fallback on default.json config
+  var queue = ('undefined' !== typeof options.queue) ? options.queue : config.get('stores')[0].queue;
+
+  return new Client(host, port, queue, options);
 };
