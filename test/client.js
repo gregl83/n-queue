@@ -1,3 +1,4 @@
+var Buffer = require('buffer').Buffer;
 var Duplex = require('stream').Duplex;
 
 var should = require('should');
@@ -53,6 +54,7 @@ describe('client', function() {
 
     var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
+    var _write = sinon.spy(client, '_write');
 
     var tasks = {/* task data */};
 
@@ -60,10 +62,13 @@ describe('client', function() {
       should(err).be.undefined;
 
       sinon.assert.calledOnce(_pushTask);
-      sinon.assert.calledWith(_pushTask, JSON.stringify(tasks));
+      sinon.assert.calledWithExactly(_pushTask, JSON.stringify(tasks), sinon.match.func);
 
       sinon.assert.calledOnce(write);
-      sinon.assert.calledWith(write, JSON.stringify(tasks), 'utf8');
+      sinon.assert.calledWithExactly(write, JSON.stringify(tasks), 'utf8', sinon.match.func);
+
+      sinon.assert.calledOnce(_write);
+      sinon.assert.calledWithExactly(_write, sinon.match.instanceOf(Buffer), 'buffer', sinon.match.func);
 
       done();
     });
@@ -78,6 +83,7 @@ describe('client', function() {
 
     var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
+    var _write = sinon.spy(client, '_write');
 
     var tasks = [{/* task data */}, {/* task data */}];
 
@@ -85,12 +91,16 @@ describe('client', function() {
       should(err).be.undefined;
 
       sinon.assert.calledTwice(_pushTask);
-      sinon.assert.calledWith(_pushTask, JSON.stringify(tasks[0]));
-      sinon.assert.calledWith(_pushTask, JSON.stringify(tasks[1]));
+      sinon.assert.calledWithExactly(_pushTask, JSON.stringify(tasks[0]), sinon.match.func);
+      sinon.assert.calledWithExactly(_pushTask, JSON.stringify(tasks[1]), sinon.match.func);
 
       sinon.assert.calledTwice(write);
-      sinon.assert.calledWith(write, JSON.stringify(tasks[0]), 'utf8');
-      sinon.assert.calledWith(write, JSON.stringify(tasks[1]), 'utf8');
+      sinon.assert.calledWithExactly(write, JSON.stringify(tasks[0]), 'utf8', sinon.match.func);
+      sinon.assert.calledWithExactly(write, JSON.stringify(tasks[1]), 'utf8', sinon.match.func);
+
+      sinon.assert.calledTwice(_write);
+      sinon.assert.calledWithExactly(_write, sinon.match.instanceOf(Buffer), 'buffer', sinon.match.func);
+      sinon.assert.calledWithExactly(_write, sinon.match.instanceOf(Buffer), 'buffer', sinon.match.func);
 
       done();
     });
