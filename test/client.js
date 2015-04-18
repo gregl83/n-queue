@@ -51,22 +51,19 @@ describe('client', function() {
 
     var client = new Client(host, port, options);
 
-    var _pushTalk = sinon.spy(client, '_pushTask');
+    var _pushTask = sinon.spy(client, '_pushTask');
+    var write = sinon.spy(client, 'write');
 
     var tasks = {/* task data */};
 
     client.pushTasks(tasks, function() {
-      // todo verify task is in queue
+      sinon.assert.calledOnce(_pushTask);
+      sinon.assert.calledWith(_pushTask, JSON.stringify(tasks));
 
-      _pushTalk.calledWith(JSON.stringify(tasks));
+      sinon.assert.calledOnce(write);
+      sinon.assert.calledWith(write, JSON.stringify(tasks), 'utf8');
 
       done();
-
-      //(_pushTalk.calledOnce).should.be.true;
-
-
-
-
     });
   });
 
@@ -77,10 +74,19 @@ describe('client', function() {
 
     var client = new Client(host, port, options);
 
+    var _pushTask = sinon.spy(client, '_pushTask');
+    var write = sinon.spy(client, 'write');
+
     var tasks = [{/* task data */}, {/* task data */}];
 
     client.pushTasks(tasks, function() {
-      // todo verify task is in queue
+      sinon.assert.calledTwice(_pushTask);
+      sinon.assert.calledWith(_pushTask, JSON.stringify(tasks[0]));
+      sinon.assert.calledWith(_pushTask, JSON.stringify(tasks[1]));
+
+      sinon.assert.calledTwice(write);
+      sinon.assert.calledWith(write, JSON.stringify(tasks[0]), 'utf8');
+      sinon.assert.calledWith(write, JSON.stringify(tasks[1]), 'utf8');
 
       done();
     });
