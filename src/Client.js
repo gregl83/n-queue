@@ -19,6 +19,8 @@ function Client(host, port, options) {
 
   Duplex.call(self, {});  // todo setup stream options
 
+  // todo set queue name here
+
   self.store = redis.createClient(port, host, options);
 }
 
@@ -30,13 +32,10 @@ util.inherits(Client, Duplex);
  * Add task to tail of queue
  * Stream.write
  *
- * @param {string} queue name
- * @param {number} priority level of task
- * @param {object} task to queue
- * @param {function} cb
+ * @param {{priority:number, task:object}[]} tasks
  * @async
  */
-Client.prototype.addTask = function(queue, priority, task, cb) {
+Client.prototype.pushTasks = function(tasks) {
   // todo call stream.write
 };
 
@@ -56,11 +55,9 @@ Client.prototype._write = function(chunk, encoding, cb) {
  * Get task from head of queue
  * Stream.read
  *
- * @param {string} queue name
- * @param cb
  * @async
  */
-Client.prototype.getTask = function(queue, cb) {
+Client.prototype.readTasks = function() {
   // todo call stream.read
 };
 

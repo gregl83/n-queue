@@ -1,3 +1,5 @@
+var Duplex = require('stream').Duplex;
+
 var should = require('should');
 var mockery = require('mockery');
 var sinon = require('sinon');
@@ -36,12 +38,13 @@ describe('client', function() {
 
     var client = new Client(host, port);
 
+    (client).should.be.instanceOf(Duplex);
     (client.store).should.be.eql(clientMock);
 
     done();
   });
 
-  // todo push tests
+  // todo pushTasks tests
 
-  // todo shift tests
+  // todo readTasks tests
 });
