@@ -32,6 +32,7 @@ describe('client', function() {
     var port = 6379;
     var queue = 'queue';
     var options = {};
+    var keyspace = 'nqueue:' + queue;
 
     var clientMock = {};
     redisMock.createClient.returns(clientMock);
@@ -41,6 +42,28 @@ describe('client', function() {
     redisMock.createClient.calledWithExactly(host, port, options);
 
     (client).should.be.instanceOf(Duplex);
+    (client.keyspace).should.be.eql(keyspace);
+    (client.store).should.be.eql(clientMock);
+
+    done();
+  });
+
+  it('new client prefix options override', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var queue = 'queue';
+    var options = {};
+    var keyspace = 'prefix:' + queue;
+
+    var clientMock = {};
+    redisMock.createClient.returns(clientMock);
+
+    var client = new Client(host, port, queue, {prefix: 'prefix'});
+
+    redisMock.createClient.calledWithExactly(host, port, options);
+
+    (client).should.be.instanceOf(Duplex);
+    (client.keyspace).should.be.eql(keyspace);
     (client.store).should.be.eql(clientMock);
 
     done();
