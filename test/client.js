@@ -44,7 +44,37 @@ describe('client', function() {
     done();
   });
 
-  // todo pushTasks tests
+  it('push task to queue', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var options = {};
+
+    var client = new Client(host, port, options);
+
+    var tasks = {/* task data */};
+
+    client.pushTasks(tasks, function() {
+      // todo verify task is in queue
+
+      done();
+    });
+  });
+
+  it('push task array to queue', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var options = {};
+
+    var client = new Client(host, port, options);
+
+    var tasks = [{/* task data */}, {/* task data */}];
+
+    client.pushTasks(tasks, function() {
+      // todo verify task is in queue
+
+      done();
+    });
+  });
 
   // todo readTasks tests
 });

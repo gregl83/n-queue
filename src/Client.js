@@ -2,6 +2,7 @@ var util = require('util');
 var Duplex = require('stream').Duplex;
 
 var config = require('config');
+var async = require('async');
 var redis = require('redis');
 
 
@@ -29,25 +30,61 @@ util.inherits(Client, Duplex);
 
 
 /**
- * Add task to tail of queue
- * Stream.write
+ * Push task to queue
  *
- * @param {{priority:number, task:object}[]} tasks
- * @async
+ * @param {string} task
+ * @param {function} cb
+ * @private
  */
-Client.prototype.pushTasks = function(tasks) {
-  // todo call stream.write
+Client.prototype._pushTask = function(task, cb) {
+  this.write(task, 'utf8', function() {
+    // todo handle arguments
+    cb();
+  });
 };
 
 
 /**
- * Gets called by Stream.write
+ * Push task to tail of queue
+ * Stream.write
+ *
+ * @param {{priority:number, task:object}[]} tasks
+ * @param {function} cb
+ * @async
+ */
+Client.prototype.pushTasks = function(tasks, cb) {
+  var self = this;
+
+  if (!Array.isArray(tasks)) tasks = [tasks];
+
+  var queue = async.queue(function (task, callback) {
+    task = JSON.stringify(task);
+    self._pushTask(task, function() {
+      // todo handle arguments
+      callback();
+    });
+  }, 10);
+
+  queue.drain = function() {
+    // todo handle arguments
+
+    cb();
+  };
+
+  queue.push(tasks);
+};
+
+
+/**
+ * Called by Stream.write
  * See Streams API
  *
+ * @private
  * @inheritdoc
  */
 Client.prototype._write = function(chunk, encoding, cb) {
   // todo write task to queue
+  cb();
 };
 
 
@@ -63,9 +100,10 @@ Client.prototype.readTasks = function() {
 
 
 /**
- * Gets called by Stream.read
+ * Called by Stream.read
  * See Streams API
  *
+ * @private
  * @inheritdoc
  */
 Client.prototype._read = function(size) {
