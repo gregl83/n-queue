@@ -34,7 +34,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port);
 
-    sinon.assert.calledWith(ClientSpy, host, port);
+    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.object);
 
     done();
   });
@@ -84,7 +84,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port);
 
-    sinon.assert.calledWith(ClientSpy, host, port);
+    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.object);
 
     done();
   });
