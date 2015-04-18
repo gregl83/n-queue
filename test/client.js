@@ -51,12 +51,22 @@ describe('client', function() {
 
     var client = new Client(host, port, options);
 
+    var _pushTalk = sinon.spy(client, '_pushTask');
+
     var tasks = {/* task data */};
 
     client.pushTasks(tasks, function() {
       // todo verify task is in queue
 
+      _pushTalk.calledWith(JSON.stringify(tasks));
+
       done();
+
+      //(_pushTalk.calledOnce).should.be.true;
+
+
+
+
     });
   });
 

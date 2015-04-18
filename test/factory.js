@@ -32,9 +32,9 @@ describe('factory', function() {
     var host = "127.0.0.1";
     var port = 6379;
 
-    ClientSpy.calledWithExactly(host, port);
-
     nQueue.createClient(host, port);
+
+    sinon.assert.calledWith(ClientSpy, host, port);
 
     done();
   });
@@ -44,9 +44,9 @@ describe('factory', function() {
     var port = 6379;
     var options = {};
 
-    ClientSpy.calledWithExactly(host, port, options);
-
     nQueue.createClient(host, port, options);
+
+    sinon.assert.calledWithExactly(ClientSpy, host, port, options);
 
     done();
   });
@@ -56,11 +56,11 @@ describe('factory', function() {
     var port = 6379;
     var options = ["a", "b", "c"];
 
-    ClientSpy.calledWithExactly(host, port, options);
-
     should.throws(function() {
       nQueue.createClient(host, port, options);
     });
+
+    sinon.assert.notCalled(ClientSpy);
 
     done();
   });
@@ -69,11 +69,11 @@ describe('factory', function() {
     var host = 127001;
     var port = 6379;
 
-    ClientSpy.calledWithExactly(host, port);
-
     should.throws(function() {
       nQueue.createClient(host, port);
     });
+
+    sinon.assert.notCalled(ClientSpy);
 
     done();
   });
@@ -82,9 +82,9 @@ describe('factory', function() {
     var host = "127.0.0.1";
     var port = "6379";
 
-    ClientSpy.calledWithExactly(host, port);
-
     nQueue.createClient(host, port);
+
+    sinon.assert.calledWith(ClientSpy, host, port);
 
     done();
   });
@@ -93,11 +93,11 @@ describe('factory', function() {
     var host = "127.0.0.1";
     var port = [6379];
 
-    ClientSpy.calledWithExactly(host, port);
-
     should.throws(function() {
       nQueue.createClient(host, port);
     });
+
+    sinon.assert.notCalled(ClientSpy);
 
     done();
   });

@@ -65,8 +65,7 @@ Client.prototype.pushTasks = function(tasks, cb) {
   }, 10);
 
   queue.drain = function() {
-    // todo handle arguments
-
+    // todo handle arguments find out where error ends up
     cb();
   };
 
