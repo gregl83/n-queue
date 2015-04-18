@@ -56,7 +56,9 @@ describe('client', function() {
 
     var tasks = {/* task data */};
 
-    client.pushTasks(tasks, function() {
+    client.pushTasks(tasks, function(err) {
+      should(err).be.undefined;
+
       sinon.assert.calledOnce(_pushTask);
       sinon.assert.calledWith(_pushTask, JSON.stringify(tasks));
 
@@ -79,7 +81,9 @@ describe('client', function() {
 
     var tasks = [{/* task data */}, {/* task data */}];
 
-    client.pushTasks(tasks, function() {
+    client.pushTasks(tasks, function(err) {
+      should(err).be.undefined;
+
       sinon.assert.calledTwice(_pushTask);
       sinon.assert.calledWith(_pushTask, JSON.stringify(tasks[0]));
       sinon.assert.calledWith(_pushTask, JSON.stringify(tasks[1]));
@@ -87,6 +91,28 @@ describe('client', function() {
       sinon.assert.calledTwice(write);
       sinon.assert.calledWith(write, JSON.stringify(tasks[0]), 'utf8');
       sinon.assert.calledWith(write, JSON.stringify(tasks[1]), 'utf8');
+
+      done();
+    });
+  });
+
+  it('push task to queue _write error', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var options = {};
+
+    var client = new Client(host, port, options);
+
+    var error = new Error('error pushing task to queue');
+
+    var write = sinon.stub(client, 'write');
+
+    write.callsArgWith(2, error);
+
+    var tasks = {/* task data */};
+
+    client.pushTasks(tasks, function(err) {
+      should(err).not.be.undefined;
 
       done();
     });

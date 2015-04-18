@@ -53,20 +53,23 @@ Client.prototype._pushTask = function(task, cb) {
  */
 Client.prototype.pushTasks = function(tasks, cb) {
   var self = this;
+  var error = undefined;
 
   if (!Array.isArray(tasks)) tasks = [tasks];
 
   var queue = async.queue(function (task, callback) {
     task = JSON.stringify(task);
+
     self._pushTask(task, function(err) {
-      // todo handle arguments
+      if (!err) return callback();
+
+      error = err;
       callback(err);
     });
   }, 10);
 
   queue.drain = function() {
-    // todo handle arguments find out where error ends up
-    cb();
+    cb(error);
   };
 
   queue.push(tasks);
