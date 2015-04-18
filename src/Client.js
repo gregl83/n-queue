@@ -37,9 +37,8 @@ util.inherits(Client, Duplex);
  * @private
  */
 Client.prototype._pushTask = function(task, cb) {
-  this.write(task, 'utf8', function() {
-    // todo handle arguments
-    cb();
+  this.write(task, 'utf8', function(err) {
+    cb(err);
   });
 };
 
@@ -59,9 +58,9 @@ Client.prototype.pushTasks = function(tasks, cb) {
 
   var queue = async.queue(function (task, callback) {
     task = JSON.stringify(task);
-    self._pushTask(task, function() {
+    self._pushTask(task, function(err) {
       // todo handle arguments
-      callback();
+      callback(err);
     });
   }, 10);
 
