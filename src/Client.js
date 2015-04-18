@@ -1,3 +1,6 @@
+var util = require('util');
+var Duplex = require('stream').Duplex;
+
 var config = require('config');
 var redis = require('redis');
 
@@ -9,15 +12,23 @@ var redis = require('redis');
  * @param {string|number} port
  * @param {object} options
  * @constructor
+ * @augments Stream
  */
 function Client(host, port, options) {
   var self = this;
+
+  Duplex.call(self, {});  // todo setup stream options
+
   self.store = redis.createClient(port, host, options);
 }
 
 
+util.inherits(Client, Duplex);
+
+
 /**
- * Push task to tail of queue
+ * Add task to tail of queue
+ * Stream.write
  *
  * @param {string} queue name
  * @param {number} priority level of task
@@ -25,20 +36,43 @@ function Client(host, port, options) {
  * @param {function} cb
  * @async
  */
-Client.prototype.push = function(queue, priority, task, cb) {
-  // todo
+Client.prototype.addTask = function(queue, priority, task, cb) {
+  // todo call stream.write
+};
+
+
+/**
+ * Gets called by Stream.write
+ * See Streams API
+ *
+ * @inheritdoc
+ */
+Client.prototype._write = function(chunk, encoding, cb) {
+  // todo write task to queue
 };
 
 
 /**
  * Get task from head of queue
+ * Stream.read
  *
  * @param {string} queue name
  * @param cb
  * @async
  */
-Client.prototype.shift = function(queue, cb) {
-  // todo
+Client.prototype.getTask = function(queue, cb) {
+  // todo call stream.read
+};
+
+
+/**
+ * Gets called by Stream.read
+ * See Streams API
+ *
+ * @inheritdoc
+ */
+Client.prototype._read = function(size) {
+  // todo get task(s) from queue and push to stream
 };
 
 
