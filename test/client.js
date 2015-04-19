@@ -4,7 +4,6 @@ var Duplex = require('stream').Duplex;
 var should = require('should');
 var mockery = require('mockery');
 var sinon = require('sinon');
-var config = require('config');
 
 
 mockery.enable({
@@ -21,7 +20,6 @@ mockery.registerMock('redis', redisMock);
 
 
 var Client = require('../src/Client');
-
 
 
 describe('client', function() {

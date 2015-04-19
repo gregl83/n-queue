@@ -1,6 +1,5 @@
 var should = require('should');
 var sinon = require('sinon');
-var config = require('config');
 
 var Task = require('../src/Task');
 

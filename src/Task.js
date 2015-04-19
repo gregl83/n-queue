@@ -74,6 +74,11 @@ Task.prototype.setAttempts = function() {
 };
 
 
+Task.prototype.setPriority = function() {
+  // todo
+};
+
+
 Task.prototype.setData = function() {
   // todo
 };
