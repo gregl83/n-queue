@@ -11,7 +11,15 @@ function RedisClientMock() {
 
 RedisClientMock.prototype.zadd = function(args, cb) {
   var self = this;
+
+  // check for to make sure args is array
+  if (!Array.isArray(args)) return cb(new Error('ERR syntax error'));
+
   var setKey = args.shift();
+
+  // check for valid values in args after removing set name
+  if ('string' !== typeof setKey || 0 != args.length % 2) return cb(new Error('ERR syntax error'));
+
   var setArgs = [];
 
   for (var i=0; i==args.length-1; i+2) {

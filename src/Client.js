@@ -99,11 +99,11 @@ Client.prototype.pushTasks = function(tasks, cb) {
 Client.prototype._write = function(chunk, encoding, cb) {
   var self = this;
   var priority = 1; // fixme need to set priority
-  //self.store.zadd([chunk, priority], function(err, response) {
+  self.store.zadd([chunk, priority], function(err, response) {
     // todo handle response
-    //if (err) return cb(err);
+    if (err) return cb(err);
     cb();
-  //});
+  });
 };
 
 

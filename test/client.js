@@ -16,7 +16,7 @@ mockery.enable({
 var RedisMock = require('./support/RedisMock');
 var redisMock = new RedisMock();
 
-sinon.stub(redisMock, "createClient");
+sinon.spy(redisMock, "createClient");
 mockery.registerMock('redis', redisMock);
 
 
@@ -29,6 +29,10 @@ describe('client', function() {
     mockery.deregisterAll();
   });
 
+  afterEach(function() {
+    redisMock.createClient.reset();
+  });
+
   it('new client redis server', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
@@ -36,16 +40,12 @@ describe('client', function() {
     var options = {};
     var keyspace = 'nqueue:' + queue;
 
-    var clientMock = {};
-    redisMock.createClient.returns(clientMock);
-
     var client = new Client(host, port, queue, {});
 
     redisMock.createClient.calledWithExactly(host, port, options);
 
     (client).should.be.instanceOf(Duplex);
     (client.keyspace).should.be.eql(keyspace);
-    (client.store).should.be.eql(clientMock);
 
     done();
   });
@@ -57,16 +57,12 @@ describe('client', function() {
     var options = {};
     var keyspace = 'prefix:' + queue;
 
-    var clientMock = {};
-    redisMock.createClient.returns(clientMock);
-
     var client = new Client(host, port, queue, {prefix: 'prefix'});
 
     redisMock.createClient.calledWithExactly(host, port, options);
 
     (client).should.be.instanceOf(Duplex);
     (client.keyspace).should.be.eql(keyspace);
-    (client.store).should.be.eql(clientMock);
 
     done();
   });
