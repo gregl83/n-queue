@@ -24,22 +24,28 @@ RedisClientMock.prototype.zadd = function(args, cb) {
     var arg = setArgs[key];
 
     if (2 != arg.length) {
-      err = new Error('zadd requires score and value');
+      err = new Error('ERR syntax error');
       return false;
     }
 
+    return true;
+  });
+
+  if (err) return cb(err, undefined);
+
+  var response = 0;
+
+  setArgs.forEach(function(arg) {
     if ('undefined' === typeof self.setsIndex[arg[0]]) {
       self.sets.push([]);
       self.setsIndex[arg[0]] = self.sets.length - 1;
     }
 
     self.sets[self.setsIndex[arg[0]]].push(arg[1]);
-
-    return true;
+    response++;
   });
 
-  if (err) return cb(err);
-  cb();
+  cb(undefined, response);
 };
 
 
