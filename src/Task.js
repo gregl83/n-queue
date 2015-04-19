@@ -40,7 +40,7 @@
  * @constructor
  */
 function Task(task) {
-  if ('string' === typeof task) task = JSON.encode(task);
+  if ('string' === typeof task) task = JSON.parse(task);
   else if ('object' !== typeof task || Array.isArray(task)) task = {};
 
   this.meta = ('object' === typeof task.meta && !Array.isArray(task.meta)) ? task.meta : {};
