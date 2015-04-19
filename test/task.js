@@ -6,7 +6,7 @@ var Task = require('../src/Task');
 
 
 describe('task', function() {
-  it('new task', function(done) {
+  it('new task sans args', function(done) {
     var task = new Task();
 
     (task.meta).should.be.eql({});
@@ -15,7 +15,7 @@ describe('task', function() {
     done();
   });
 
-  it('new task object task param', function(done) {
+  it('new task object task arg', function(done) {
     var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
 
     var task = new Task(oldTask);
@@ -26,7 +26,7 @@ describe('task', function() {
     done();
   });
 
-  it('new task string task param', function(done) {
+  it('new task string task arg', function(done) {
     var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
     var taskString = JSON.stringify(oldTask);
 
@@ -38,7 +38,7 @@ describe('task', function() {
     done();
   });
 
-  it('new task invalid task param', function(done) {
+  it('new task invalid task arg', function(done) {
     var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}];
 
     var task = new Task(oldTask);
