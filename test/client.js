@@ -6,23 +6,22 @@ var mockery = require('mockery');
 var sinon = require('sinon');
 var config = require('config');
 
+
 mockery.enable({
   useCleanCache: true,
   warnOnReplace: false,
   warnOnUnregistered: false
 });
 
-var redisMock = {
-  createClient: function() {}
-};
+var RedisMock = require('./support/RedisMock');
+var redisMock = new RedisMock();
+
 sinon.stub(redisMock, "createClient");
 mockery.registerMock('redis', redisMock);
 
 
 var Client = require('../src/Client');
 
-
-// todo edit client mocks to have zadd method and other methods
 
 
 describe('client', function() {
