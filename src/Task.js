@@ -22,7 +22,8 @@
      },
      {
       set: done,
-      date: Date
+      date: Date,
+      errors: []
      }
    ]
  },
@@ -46,6 +47,41 @@ function Task(task) {
   this.meta = ('object' === typeof task.meta && !Array.isArray(task.meta)) ? task.meta : {};
   this.data = ('object' === typeof task.data && !Array.isArray(task.data)) ? task.data : {};
 }
+
+
+Task.createScheduledSet = function() {
+  // todo
+};
+
+
+Task.createQueuedSet = function() {
+  // todo
+};
+
+
+Task.createProcessingSet = function() {
+  // todo
+};
+
+
+Task.createDoneSet = function() {
+  // todo
+};
+
+
+Task.prototype.setAttempts = function() {
+  // todo
+};
+
+
+Task.prototype.setData = function() {
+  // todo
+};
+
+
+Task.prototype.pushSet = function() {
+  // todo
+};
 
 
 /**

@@ -22,6 +22,9 @@ mockery.registerMock('redis', redisMock);
 var Client = require('../src/Client');
 
 
+// todo edit client mocks to have zadd method and other methods
+
+
 describe('client', function() {
   after(function() {
     mockery.deregisterAll();

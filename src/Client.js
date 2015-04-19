@@ -97,8 +97,13 @@ Client.prototype.pushTasks = function(tasks, cb) {
  * @inheritdoc
  */
 Client.prototype._write = function(chunk, encoding, cb) {
-  // todo write task to queue
-  cb();
+  var self = this;
+  var priority = 1; // fixme need to set priority
+  //self.store.zadd([chunk, priority], function(err, response) {
+    // todo handle response
+    //if (err) return cb(err);
+    cb();
+  //});
 };
 
 
@@ -122,6 +127,16 @@ Client.prototype.readTasks = function() {
  */
 Client.prototype._read = function(size) {
   // todo get task(s) from queue and push to stream
+};
+
+
+/**
+ * Get status of Queue
+ *
+ * @async
+ */
+Client.prototype.stat = function() {
+  // todo return status of queue data
 };
 
 
