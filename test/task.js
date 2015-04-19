@@ -39,4 +39,19 @@ describe('task', function() {
 
     done();
   });
+
+  it('to JSON string', function(done) {
+    var task = {meta: {/* meta in array */}, data: {/* data in array */}};
+    var taskString = JSON.stringify(task);
+
+    task = new Task(task);
+
+    var toString = task.toString();
+    var stringify = JSON.stringify(task);
+
+    (taskString).should.be.eql(toString);
+    (taskString).should.be.eql(stringify);
+
+    done();
+  });
 });

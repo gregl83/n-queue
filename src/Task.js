@@ -53,8 +53,8 @@ function Task(task) {
  *
  * @returns {string} task in JSON string format
  */
-Task.prototype.toString = Task.prototype.toJSON = function() {
-  return JSON.toString({
+Task.prototype.toString = function() {
+  return JSON.stringify({
     meta: this.meta,
     data: this.data
   });
