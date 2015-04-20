@@ -56,7 +56,19 @@ function Task(task) {
   if ('string' === typeof task) task = JSON.parse(task);
   else if ('object' !== typeof task || Array.isArray(task)) task = {};
 
-  this.meta = ('object' === typeof task.meta && !Array.isArray(task.meta)) ? task.meta : {};
+  if ('object' === typeof task.meta && !Array.isArray(task.meta)) this.meta = task.meta;
+  else {
+    this.meta = {
+      schedule: {},
+      priority: 20,
+      sets: [],
+      attempts: {max: 3},
+      holds: {duration: 600},
+      status: 'new',
+      errors: []
+    };
+  }
+
   this.data = ('object' === typeof task.data && !Array.isArray(task.data)) ? task.data : {};
 }
 
@@ -87,18 +99,26 @@ Task.createDoneSet = function() {
 // methods
 
 
-Task.prototype.setAttempts = function() {
-  // todo
+Task.prototype.setAttempts = function(max) {
+  this.meta.attempts.max = max;
 };
 
 
-Task.prototype.setPriority = function() {
-  // todo
+Task.prototype.setPriority = function(priority) {
+  // todo support strings (human readable)
+  this.meta.priority = priority;
 };
 
 
-Task.prototype.setData = function() {
-  // todo
+// reference
+Task.prototype.getData = function() {
+  return this.data;
+};
+
+
+Task.prototype.setData = function(data) {
+  // todo type check
+  this.data = data;
 };
 
 
