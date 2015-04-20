@@ -1,30 +1,42 @@
 /*
 {
  meta: {
-   attempts: {
-    max: 3
+   schedule: {
+    // schedule options...
    },
    sets: [
      {
       set: scheduled,
-      date: Date
+      date: [
+        // Date
+      ]
      },
      {
       set: queued,
-      date: Date
+      date: [
+        // Date
+      ]
      },
      {
       set: processing,
-      date: Date,
-      attempts: [
-        // dates ...
+      date: [
+        // Date
       ]
      },
      {
       set: done,
-      date: Date,
-      errors: []
+      date: Date
      }
+   ],
+   attempts: {
+    max: number
+   },
+   holds: {
+    duration: number
+   },
+   status: string,
+   errors: [
+    // Error
    ]
  },
  data: {
@@ -49,6 +61,9 @@ function Task(task) {
 }
 
 
+// sets
+
+
 Task.createScheduledSet = function() {
   // todo
 };
@@ -67,6 +82,9 @@ Task.createProcessingSet = function() {
 Task.createDoneSet = function() {
   // todo
 };
+
+
+// methods
 
 
 Task.prototype.setAttempts = function() {
