@@ -95,7 +95,13 @@ Task.createDoneSet = function() {
 // methods
 
 
+/**
+ * Set Task number of Attempts
+ *
+ * @param {number} max
+ */
 Task.prototype.setAttempts = function(max) {
+  if ('number' !== typeof max) throw new Error('attempts max must be a number');
   this.meta.attempts.max = max;
 };
 
@@ -111,20 +117,29 @@ Task.prototype.setPriority = function(priority) {
 };
 
 
-// reference
+/**
+ * Gets Task Data object
+ *
+ * @returns {object} data reference
+ */
 Task.prototype.getData = function() {
   return this.data;
 };
 
 
+/**
+ * Set Task Data
+ *
+ * @param {object} data
+ */
 Task.prototype.setData = function(data) {
-  // todo type check
+  if ('object' !== typeof data) throw new Error('data must be an object');
   this.data = data;
 };
 
 
 Task.prototype.pushSet = function() {
-  // todo
+  // todo figure out task flow and write method
 };
 
 
