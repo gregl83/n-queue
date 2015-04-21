@@ -1,53 +1,24 @@
-/*
-{
- meta: {
-   schedule: {
-    // schedule options...
-   },
-   sets: [
-     {
-      set: scheduled,
-      date: [
-        // Date
-      ]
-     },
-     {
-      set: queued,
-      date: [
-        // Date
-      ]
-     },
-     {
-      set: processing,
-      date: [
-        // Date
-      ]
-     },
-     {
-      set: done,
-      date: Date
-     }
-   ],
-   attempts: {
-    max: number
-   },
-   holds: {
-    duration: number
-   },
-   status: string,
-   errors: [
-    // Error
-   ]
- },
- data: {
-  // ...
- }
-}
- */
-
-
 /**
  * Queue Task object
+ *
+ * Literal Object Structure:
+ * {
+ *  "meta" : {
+ *    "schedule" : { ... },
+ *    "sets" : [
+ *      { "set" : "scheduled", "date" : [ date, ... ]},
+ *      { "set" : "queued", "date" : [ date, ... ]},
+ *      { "set" : "processing", "date" : [ date, ... ]},
+ *      { "set" : "done", "date" : [ date, ... ]}
+ *    ],
+ *    "attempts" : { "max" : number },
+ *    "holds" : { "duration" : number }
+ *    "status" : string,
+ *    "errors" : [ error, ... ]
+ *
+ *  },
+ *  "data" : { ... }
+ * }
  *
  * @param {string} task in JSON string format
  * @constructor
@@ -59,7 +30,7 @@ function Task(task) {
   if ('object' === typeof task.meta && !Array.isArray(task.meta)) this.meta = task.meta;
   else {
     this.meta = {
-      schedule: {},
+      schedule: {}, // reserved for scheduler
       priority: 20,
       sets: [],
       attempts: {max: 3},
@@ -71,6 +42,31 @@ function Task(task) {
 
   this.data = ('object' === typeof task.data && !Array.isArray(task.data)) ? task.data : {};
 }
+
+
+/**
+ * String Priority to numerical Sorted Set Score
+ *
+ * @type {{critical: number, high: number, medium: number, low: number}}
+ */
+Task.priorityScores = {
+  'critical': 25,
+  'high': 50, // default
+  'medium': 75,
+  'low': 100
+};
+
+
+/**
+ * Get a Priority Score for a string Priority label (critical, high, medium, low)
+ *
+ * @param {string} priority
+ * @returns {number}
+ */
+Task.getPriorityScore = function(priority) {
+  if ('undefined' !== typeof Task.priorityScores[priority]) return Task.priorityScores[priority];
+  return Task.priorityScores['high'];
+};
 
 
 // sets
@@ -104,9 +100,14 @@ Task.prototype.setAttempts = function(max) {
 };
 
 
+/**
+ * Sets the Task Priority
+ *
+ * @param {string|number} priority
+ */
 Task.prototype.setPriority = function(priority) {
-  // todo support strings (human readable)
-  this.meta.priority = priority;
+  if ('number' === typeof priority) this.meta.priority = Task.getPriorityScore(priority);
+  else this.meta.priority = Task.getPriorityScore(priority);
 };
 
 
