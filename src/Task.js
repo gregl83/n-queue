@@ -6,16 +6,15 @@
  *  "meta" : {
  *    "schedule" : { ... },
  *    "sets" : [
- *      { "set" : "scheduled", "date" : [ date, ... ]},
- *      { "set" : "queued", "date" : [ date, ... ]},
- *      { "set" : "processing", "date" : [ date, ... ]},
- *      { "set" : "done", "date" : [ date, ... ]}
+ *      { "set" : "scheduled", "date" : [ date, ... ] },
+ *      { "set" : "queued", "date" : [ date, ... ] },
+ *      { "set" : "processing", "date" : [ date, ... ] },
+ *      { "set" : "done", "date" : [ date, ... ] }
  *    ],
  *    "attempts" : { "max" : number },
  *    "holds" : { "duration" : number }
  *    "status" : string,
  *    "errors" : [ error, ... ]
- *
  *  },
  *  "data" : { ... }
  * }
@@ -69,30 +68,12 @@ Task.getPriorityScore = function(priority) {
 };
 
 
-// sets
-
-
-Task.createScheduledSet = function() {
-  // todo
-};
-
-
-Task.createQueuedSet = function() {
-  // todo
-};
-
-
-Task.createProcessingSet = function() {
-  // todo
-};
-
-
-Task.createDoneSet = function() {
-  // todo
-};
-
-
-// methods
+/**
+ * Task Sets
+ *
+ * @type {string[]}
+ */
+Task.sets = ['scheduled', 'queued', 'processing', 'done'];
 
 
 /**
@@ -138,8 +119,36 @@ Task.prototype.setData = function(data) {
 };
 
 
-Task.prototype.pushSet = function() {
-  // todo figure out task flow and write method
+/**
+ * Push Set to Task or update existing Set
+ * @param setName
+ */
+Task.prototype.pushSet = function(setName) {
+  var self = this;
+
+  var setIndex = Task.sets.indexOf(setName);
+  if (-1 === setIndex) throw new Error('invalid set');
+
+  var setsIndex = null;
+
+  self.sets.every(function(key) {
+    var taskSet = self.sets[key].set;
+
+    if (setName === taskSet) {
+      setIndex = key;
+      return false;
+    }
+    else return true;
+  });
+
+  if (null !== setsIndex) {
+    self.sets[setIndex].date.push(new Date());
+  } else {
+    self.sets.push({
+      set: setName,
+      date: [new Date()]
+    });
+  }
 };
 
 
