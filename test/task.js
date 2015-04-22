@@ -49,9 +49,7 @@ describe('task', function() {
   });
 
   it('set attempts', function(done) {
-    var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}];
-
-    var task = new Task(oldTask);
+    var task = new Task();
 
     var newAttempts = 305;
 
@@ -65,14 +63,53 @@ describe('task', function() {
   });
 
   it('set attempts max invalid', function(done) {
-    var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}];
-
-    var task = new Task(oldTask);
+    var task = new Task();
 
     var newAttempts = '305';
 
     should.throws(function() {
       task.setAttempts(newAttempts);
+    });
+
+    done();
+  });
+
+  it('set priority', function(done) {
+    var task = new Task();
+
+    var newPriority = 25;
+
+    (task.meta.priority).should.not.eql(newPriority);
+
+    task.setPriority(newPriority);
+
+    (task.meta.priority).should.be.eql(newPriority);
+
+    done();
+  });
+
+  it('set priority string', function(done) {
+    var task = new Task();
+
+    var newPriority = 25;
+    var newPriorityString = 'critical'; // hardcoded
+
+    (task.meta.priority).should.not.eql(newPriority);
+
+    task.setPriority(newPriorityString);
+
+    (task.meta.priority).should.be.eql(newPriority);
+
+    done();
+  });
+
+  it('set priority invalid string', function(done) {
+    var task = new Task();
+
+    var newPriorityString = 'invalid'; // hardcoded
+
+    should.throws(function() {
+      task.setPriority(newPriorityString);
     });
 
     done();

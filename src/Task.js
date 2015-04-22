@@ -62,10 +62,11 @@ Task.priorityScores = {
  *
  * @param {string} priority
  * @returns {number}
+ * @throws {error}
  */
 Task.getPriorityScore = function(priority) {
   if ('undefined' !== typeof Task.priorityScores[priority]) return Task.priorityScores[priority];
-  return Task.priorityScores['high'];
+  throw new Error('invalid priority');
 };
 
 
@@ -95,7 +96,7 @@ Task.prototype.setAttempts = function(max) {
  * @param {string|number} priority
  */
 Task.prototype.setPriority = function(priority) {
-  if ('number' === typeof priority) this.meta.priority = Task.getPriorityScore(priority);
+  if ('number' === typeof priority) this.meta.priority = priority;
   else this.meta.priority = Task.getPriorityScore(priority);
 };
 
