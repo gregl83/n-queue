@@ -99,16 +99,8 @@ Client.prototype.pushTasks = function(tasks, cb) {
  */
 Client.prototype._write = function(chunk, encoding, cb) {
   var self = this;
-
-  var task = chunk.toString('utf8');
-
-  console.log(task);
-
-  // todo values below should be included in the chunk/task
-  var sortedSet = 'scheduled'; // fixme hard coded sorted set
-  var priority = 25; // fixme need to set priority
-
-  self.store.zadd([sortedSet, priority, chunk], function(err, response) {
+  var task = JSON.parse(chunk.toString('utf8'));
+  self.store.zadd([task.meta.set, task.meta.set, chunk], function(err, response) {
     // todo handle response (will be count of elements)
     if (err) return cb(err);
     cb();

@@ -79,16 +79,18 @@ describe('client', function() {
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
 
-    var tasks = new Task();
+    var task = new Task();
 
-    client.pushTasks(tasks, function(err) {
+    task.pushSet('queued');
+
+    client.pushTasks(task, function(err) {
       should(err).be.undefined;
 
       sinon.assert.calledOnce(_pushTask);
-      sinon.assert.calledWithExactly(_pushTask, JSON.stringify(tasks), sinon.match.func);
+      sinon.assert.calledWithExactly(_pushTask, JSON.stringify(task), sinon.match.func);
 
       sinon.assert.calledOnce(write);
-      sinon.assert.calledWithExactly(write, JSON.stringify(tasks), 'utf8', sinon.match.func);
+      sinon.assert.calledWithExactly(write, JSON.stringify(task), 'utf8', sinon.match.func);
 
       sinon.assert.calledOnce(_write);
       sinon.assert.calledWithExactly(_write, sinon.match.instanceOf(Buffer), 'buffer', sinon.match.func);
@@ -109,7 +111,10 @@ describe('client', function() {
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
 
-    var tasks = [{/* task data */}, {/* task data */}];
+    var tasks = [new Task(), new Task()];
+
+    tasks[0].pushSet('scheduled');
+    tasks[1].pushSet('queued');
 
     client.pushTasks(tasks, function(err) {
       should(err).be.undefined;
