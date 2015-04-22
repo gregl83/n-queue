@@ -98,9 +98,10 @@ Client.prototype.pushTasks = function(tasks, cb) {
  */
 Client.prototype._write = function(chunk, encoding, cb) {
   var self = this;
-  var priority = 1; // fixme need to set priority
-  self.store.zadd([chunk, priority], function(err, response) {
-    // todo handle response
+  var sortedSet = 'scheduled';
+  var priority = 25; // fixme need to set priority
+  self.store.zadd([sortedSet, priority, chunk], function(err, response) {
+    // todo handle response (will be count of elements)
     if (err) return cb(err);
     cb();
   });

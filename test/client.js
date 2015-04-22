@@ -5,6 +5,8 @@ var should = require('should');
 var mockery = require('mockery');
 var sinon = require('sinon');
 
+var Task = require('../src/Task');
+
 
 mockery.enable({
   useCleanCache: true,
@@ -77,7 +79,7 @@ describe('client', function() {
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
 
-    var tasks = {/* task data */};
+    var tasks = new Task();
 
     client.pushTasks(tasks, function(err) {
       should(err).be.undefined;
