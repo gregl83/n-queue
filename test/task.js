@@ -38,7 +38,7 @@ describe('task', function() {
   });
 
   it('new task invalid task arg', function(done) {
-    var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}];
+    var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}]; // array not supported
 
     var task = new Task(oldTask);
 
@@ -111,6 +111,22 @@ describe('task', function() {
     should.throws(function() {
       task.setPriority(newPriorityString);
     });
+
+    done();
+  });
+
+  it('get data reference', function(done) {
+    var oldTask = {meta: {type: "meta" /* meta in array */}, data: {type: "data" /* data in array */}};
+
+    var task = new Task(oldTask);
+
+    var dataReference = task.getData();
+
+    (dataReference).should.be.eql(oldTask.data);
+
+    dataReference.referenceChange = true;
+
+    (task.data).should.not.eql({type: "data" /* data in array */}); // copied oldTask data due to pass reference
 
     done();
   });
