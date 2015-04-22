@@ -24,6 +24,7 @@ function Client(host, port, queue, options) {
   self.keyspace = Client.getKeyspace(options.prefix, queue);
 
   self.store = redis.createClient(port, host);
+  // todo set redis database
 }
 
 
@@ -98,8 +99,15 @@ Client.prototype.pushTasks = function(tasks, cb) {
  */
 Client.prototype._write = function(chunk, encoding, cb) {
   var self = this;
-  var sortedSet = 'scheduled';
+
+  var task = chunk.toString('utf8');
+
+  console.log(task);
+
+  // todo values below should be included in the chunk/task
+  var sortedSet = 'scheduled'; // fixme hard coded sorted set
   var priority = 25; // fixme need to set priority
+
   self.store.zadd([sortedSet, priority, chunk], function(err, response) {
     // todo handle response (will be count of elements)
     if (err) return cb(err);

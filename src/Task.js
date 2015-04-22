@@ -31,11 +31,12 @@ function Task(task) {
   else {
     this.meta = {
       schedule: {}, // reserved for scheduler
+      set: null,
       priority: Task.getPriorityScore('high'),  // todo if string or number
       sets: [],
       attempts: {max: 3},
       holds: {duration: 600},
-      status: 'new',
+      status: 'new', // todo set statuses
       errors: []
     };
   }
@@ -133,6 +134,8 @@ Task.prototype.pushSet = function(setName) {
 
   var setIndex = Task.sets.indexOf(setName);
   if (-1 === setIndex) throw new Error('invalid set');
+
+  self.meta.set = setName;
 
   var setsIndex = null;
 

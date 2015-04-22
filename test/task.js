@@ -164,9 +164,15 @@ describe('task', function() {
     var setBName = 'queued';
 
     task.pushSet(setAName);
+
+    (task.meta.sets).should.have.length(1);
+    (task.meta.set).should.be.eql(setAName);
+    (task.meta.sets[0].set).should.be.eql(setAName);
+
     task.pushSet(setBName);
 
-    (task.meta.sets[0].set).should.be.eql(setAName);
+    (task.meta.sets).should.have.length(2);
+    (task.meta.set).should.be.eql(setBName);
     (task.meta.sets[1].set).should.be.eql(setBName);
 
     done();
@@ -180,6 +186,7 @@ describe('task', function() {
     task.pushSet(setName);
     task.pushSet(setName);
 
+    (task.meta.set).should.be.eql(setName);
     (task.meta.sets[0].set).should.be.eql(setName);
     (task.meta.sets[0].date).should.have.length(2);
 
