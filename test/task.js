@@ -48,6 +48,36 @@ describe('task', function() {
     done();
   });
 
+  it('set attempts', function(done) {
+    var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}];
+
+    var task = new Task(oldTask);
+
+    var newAttempts = 305;
+
+    (task.meta.attempts.max).should.not.eql(newAttempts);
+
+    task.setAttempts(newAttempts);
+
+    (task.meta.attempts.max).should.be.eql(newAttempts);
+
+    done();
+  });
+
+  it('set attempts max invalid', function(done) {
+    var oldTask = [{type: "meta" /* meta in array */}, {type: "data" /* data in array */}];
+
+    var task = new Task(oldTask);
+
+    var newAttempts = '305';
+
+    should.throws(function() {
+      task.setAttempts(newAttempts);
+    });
+
+    done();
+  });
+
   it('to JSON string', function(done) {
     var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
     var taskString = JSON.stringify(oldTask);

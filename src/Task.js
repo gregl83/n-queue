@@ -31,7 +31,7 @@ function Task(task) {
   else {
     this.meta = {
       schedule: {}, // reserved for scheduler
-      priority: Task.getPriorityScore('high'),
+      priority: Task.getPriorityScore('high'),  // todo if string or number
       sets: [],
       attempts: {max: 3},
       holds: {duration: 600},
@@ -81,6 +81,7 @@ Task.sets = ['scheduled', 'queued', 'processing', 'done'];
  * Set Task number of Attempts
  *
  * @param {number} max
+ * @throws {error}
  */
 Task.prototype.setAttempts = function(max) {
   if ('number' !== typeof max) throw new Error('attempts max must be a number');
@@ -113,6 +114,7 @@ Task.prototype.getData = function() {
  * Set Task Data
  *
  * @param {object} data
+ * @throws {error}
  */
 Task.prototype.setData = function(data) {
   if ('object' !== typeof data) throw new Error('data must be an object');
@@ -123,6 +125,7 @@ Task.prototype.setData = function(data) {
 /**
  * Push Set to Task or update existing Set
  * @param setName
+ * @throws {error}
  */
 Task.prototype.pushSet = function(setName) {
   var self = this;
