@@ -136,16 +136,17 @@ Task.prototype.pushSet = function(setName) {
 
   var setsIndex = null;
 
-  self.meta.sets.every(function(taskSet) {
-    if (setName === taskSet) {
-      setIndex = key;
+  self.meta.sets.every(function(taskSet, key) {
+    console.log(setName, taskSet.set, key);
+    if (setName === taskSet.set) {
+      setsIndex = key;
       return false;
     }
     else return true;
   });
 
   if (null !== setsIndex) {
-    self.meta.sets[setIndex].date.push(new Date());
+    self.meta.sets[setsIndex].date.push(new Date());
   } else {
     self.meta.sets.push({
       set: setName,

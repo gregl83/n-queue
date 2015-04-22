@@ -172,6 +172,32 @@ describe('task', function() {
     done();
   });
 
+  it('push existing set', function(done) {
+    var task = new Task();
+
+    var setName = 'scheduled';
+
+    task.pushSet(setName);
+    task.pushSet(setName);
+
+    (task.meta.sets[0].set).should.be.eql(setName);
+    (task.meta.sets[0].date).should.have.length(2);
+
+    done();
+  });
+
+  it('push set invalid setName', function(done) {
+    var task = new Task();
+
+    var setName = 'invalid';
+
+    should.throws(function() {
+      task.pushSet(setName);
+    });
+
+    done();
+  });
+
   it('to JSON string', function(done) {
     var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
     var taskString = JSON.stringify(oldTask);
