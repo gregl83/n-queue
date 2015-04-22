@@ -131,6 +131,32 @@ describe('task', function() {
     done();
   });
 
+  it('set data', function(done) {
+    var oldTask = {meta: {type: "meta" /* meta in array */}, data: {type: "data" /* data in array */}};
+
+    var task = new Task(oldTask);
+
+    (task.data).should.be.eql(oldTask.data);
+
+    task.setData({});
+
+    (task.data).should.not.eql(oldTask.data);
+
+    done();
+  });
+
+  it('set invalid data', function(done) {
+    var task = new Task();
+
+    var newData = 'invalid';
+
+    should.throws(function() {
+      task.setDate(newData);
+    });
+
+    done();
+  });
+
   it('to JSON string', function(done) {
     var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
     var taskString = JSON.stringify(oldTask);
