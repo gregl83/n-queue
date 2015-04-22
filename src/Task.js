@@ -136,8 +136,8 @@ Task.prototype.pushSet = function(setName) {
 
   var setsIndex = null;
 
-  self.sets.every(function(key) {
-    var taskSet = self.sets[key].set;
+  self.meta.sets.every(function(key) {
+    var taskSet = self.meta.sets[key].set;
 
     if (setName === taskSet) {
       setIndex = key;
@@ -147,9 +147,9 @@ Task.prototype.pushSet = function(setName) {
   });
 
   if (null !== setsIndex) {
-    self.sets[setIndex].date.push(new Date());
+    self.meta.sets[setIndex].date.push(new Date());
   } else {
-    self.sets.push({
+    self.meta.sets.push({
       set: setName,
       date: [new Date()]
     });

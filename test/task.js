@@ -157,6 +157,19 @@ describe('task', function() {
     done();
   });
 
+
+  it('push one set', function(done) {
+    var task = new Task();
+
+    var setName = 'scheduled';
+
+    task.pushSet(setName);
+
+    (task.meta.sets[0].set).should.be.eql(setName);
+
+    done();
+  });
+
   it('to JSON string', function(done) {
     var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
     var taskString = JSON.stringify(oldTask);
