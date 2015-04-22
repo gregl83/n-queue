@@ -8,7 +8,7 @@ describe('task', function() {
   it('new task sans args', function(done) {
     var task = new Task();
 
-    (task.meta).should.be.eql({});
+    (task.meta).should.be.instanceOf(Object);
     (task.data).should.be.eql({});
 
     done();

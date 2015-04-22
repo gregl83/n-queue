@@ -26,11 +26,12 @@ function Task(task) {
   if ('string' === typeof task) task = JSON.parse(task);
   else if ('object' !== typeof task || Array.isArray(task)) task = {};
 
+  // todo consider making ALL the meta properties optional
   if ('object' === typeof task.meta && !Array.isArray(task.meta)) this.meta = task.meta;
   else {
     this.meta = {
       schedule: {}, // reserved for scheduler
-      priority: 20,
+      priority: Task.getPriorityScore('high'),
       sets: [],
       attempts: {max: 3},
       holds: {duration: 600},
@@ -150,6 +151,9 @@ Task.prototype.pushSet = function(setName) {
     });
   }
 };
+
+
+// todo build task statuses
 
 
 /**
