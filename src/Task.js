@@ -136,9 +136,7 @@ Task.prototype.pushSet = function(setName) {
 
   var setsIndex = null;
 
-  self.meta.sets.every(function(key) {
-    var taskSet = self.meta.sets[key].set;
-
+  self.meta.sets.every(function(taskSet) {
     if (setName === taskSet) {
       setIndex = key;
       return false;

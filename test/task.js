@@ -157,15 +157,17 @@ describe('task', function() {
     done();
   });
 
-
-  it('push one set', function(done) {
+  it('push sets', function(done) {
     var task = new Task();
 
-    var setName = 'scheduled';
+    var setAName = 'scheduled';
+    var setBName = 'queued';
 
-    task.pushSet(setName);
+    task.pushSet(setAName);
+    task.pushSet(setBName);
 
-    (task.meta.sets[0].set).should.be.eql(setName);
+    (task.meta.sets[0].set).should.be.eql(setAName);
+    (task.meta.sets[1].set).should.be.eql(setBName);
 
     done();
   });
