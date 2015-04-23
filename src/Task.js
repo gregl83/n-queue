@@ -51,6 +51,8 @@ function Task(task) {
 
 /**
  * Get Unique Task ID
+ * Note: RFC4122 v1 UUID is generated using node-uuid module and then
+ * the resulting parts 1 and 3 are swapped to allow time based sorting
  *
  * @returns {string}
  */

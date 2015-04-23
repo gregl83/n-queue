@@ -53,6 +53,13 @@ RedisClientMock.prototype.zadd = function(args, cb) {
     response++;
   });
 
+  // perform sort on sets (binary insert not needed for test data) to simulate lexicographical sorting
+  self.sets.forEach(function(val, key) {
+    self.sets[key].sort(function(a, b) {
+      return a > b;
+    });
+  });
+
   cb(undefined, response);
 };
 
