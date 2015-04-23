@@ -1,3 +1,6 @@
+var uuid = require('node-uuid');
+
+
 /**
  * Queue Task object
  *
@@ -30,6 +33,7 @@ function Task(task) {
   if ('object' === typeof task.meta && !Array.isArray(task.meta)) this.meta = task.meta;
   else {
     this.meta = {
+      id: Task.getID(),
       schedule: {}, // reserved for scheduler
       set: null,
       priority: Task.getPriorityScore('high'),  // todo if string or number
@@ -43,6 +47,16 @@ function Task(task) {
 
   this.data = ('object' === typeof task.data && !Array.isArray(task.data)) ? task.data : {};
 }
+
+
+/**
+ * Get Unique Task ID
+ *
+ * @returns {string}
+ */
+Task.getID = function() {
+  return uuid.v1().replace(/^(.{8})-(.{4})-(.{4})/, '$3-$2-$1');
+};
 
 
 /**

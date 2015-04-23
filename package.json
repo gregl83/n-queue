@@ -39,7 +39,8 @@
     "config": "1.12.x",
     "winston": "0.9.x",
     "async": "0.9.x",
-    "redis": "0.12.x"
+    "redis": "0.12.x",
+    "node-uuid": "1.4.x"
   },
   "license": "MIT"
 }

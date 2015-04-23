@@ -91,6 +91,43 @@ Client.prototype.pushTasks = function(tasks, cb) {
 
 
 /**
+ * Shift task from set and push to another set atomically
+ *
+ * @private
+ */
+Client.prototype._shiftPush = function() {
+  var self = this;
+
+  /*
+   client = redis.createClient(), multi;
+
+   // start a separate multi command queue
+   multi = client.multi();
+   multi.incr("incr thing", redis.print);
+   multi.incr("incr other thing", redis.print);
+
+   // runs immediately
+   client.mset("incr thing", 100, "incr other thing", 1, redis.print);
+
+   // drains multi queue and runs atomically
+   multi.exec(function (err, replies) {
+   console.log(replies); // 101, 2
+   });
+
+   // you can re-run the same transaction if you like
+   multi.exec(function (err, replies) {
+   console.log(replies); // 102, 3
+   client.quit();
+   });
+   */
+
+  var multi = self.store.multi();
+
+  // todo multi exec to perform atomic sets shift/push
+};
+
+
+/**
  * Called by Stream.write
  * See Streams API
  *
@@ -115,7 +152,13 @@ Client.prototype._write = function(chunk, encoding, cb) {
  * @async
  */
 Client.prototype.readTasks = function() {
-  // todo call stream.read
+  var self = this;
+  var task = JSON.parse(chunk.toString('utf8'));
+  self.store.zadd([task.meta.set, task.meta.set, chunk], function(err, response) {
+    // todo handle response (will be count of elements)
+    if (err) return cb(err);
+    cb();
+  });
 };
 
 
