@@ -7,7 +7,9 @@ var uuid = require('node-uuid');
  * Literal Object Structure:
  * {
  *  "meta" : {
+ *    "id" : string,
  *    "schedule" : { ... },
+ *    "set" : string,
  *    "sets" : [
  *      { "set" : "scheduled", "date" : [ date, ... ] },
  *      { "set" : "queued", "date" : [ date, ... ] },
@@ -36,11 +38,11 @@ function Task(task) {
       id: Task.getID(),
       schedule: {}, // reserved for scheduler
       set: null,
-      priority: Task.getPriorityScore('high'),  // todo if string or number
+      priority: Task.getPriorityScore('high'),
       sets: [],
       attempts: {max: 3},
       holds: {duration: 600},
-      status: 'new', // todo set statuses
+      // todo status: 'new',
       errors: []
     };
   }

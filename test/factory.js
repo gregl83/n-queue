@@ -4,7 +4,7 @@ var sinon = require('sinon');
 
 
 mockery.enable({
-  useCleanCache: true,
+  useCleanCache: false,
   warnOnReplace: false,
   warnOnUnregistered: false
 });

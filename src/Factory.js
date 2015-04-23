@@ -8,8 +8,8 @@ var Client = require('./Client');
  * @param {string} host
  * @param {string|number} port
  * @param {object=object} options
- * @throws {Error} invalid params
- * @returns {Client}
+ * @throws {error} invalid params
+ * @returns {client}
  */
 module.exports.createClient = function(host, port, options) {
   if ('string' !== typeof host) throw new Error('host must be a string');
