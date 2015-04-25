@@ -5,3 +5,7 @@
 NodeJS Redis Queue
 
 In Development
+
+## License
+
+MIT
