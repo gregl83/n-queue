@@ -4,6 +4,7 @@ var Duplex = require('stream').Duplex;
 var config = require('config');
 var async = require('async');
 var redis = require('redis');
+var redisCommands = require('n-redis-commands');
 
 var Task = require('./Task');
 
@@ -109,43 +110,6 @@ Client.prototype.pushTasks = function(tasks, cb) {
 
 
 /**
- * Shift task from set and push to another set atomically
- *
- * @private
- */
-Client.prototype._shiftPush = function() {
-  var self = this;
-
-  /*
-   client = redis.createClient(), multi;
-
-   // start a separate multi command queue
-   multi = client.multi();
-   multi.incr("incr thing", redis.print);
-   multi.incr("incr other thing", redis.print);
-
-   // runs immediately
-   client.mset("incr thing", 100, "incr other thing", 1, redis.print);
-
-   // drains multi queue and runs atomically
-   multi.exec(function (err, replies) {
-   console.log(replies); // 101, 2
-   });
-
-   // you can re-run the same transaction if you like
-   multi.exec(function (err, replies) {
-   console.log(replies); // 102, 3
-   client.quit();
-   });
-   */
-
-  // var multi = self.store.multi();
-
-  // todo multi exec to perform atomic sets shift/push
-};
-
-
-/**
  * Called by Stream.write
  * See Streams API
  *
@@ -154,6 +118,8 @@ Client.prototype._shiftPush = function() {
  */
 Client.prototype._write = function(task, encoding, cb) {
   var self = this;
+
+  // todo switch queue to uses plists from n-redis-commands
 
   Client.convertTaskToMember(task, function(err, member) {
     if (err) return cb(err);
@@ -175,6 +141,8 @@ Client.prototype._write = function(task, encoding, cb) {
  * @async
  */
 Client.prototype.readTasks = function() {
+  // todo use n-redis-commands
+
   //var self = this;
   //var task = JSON.parse(chunk.toString('utf8'));
   //self.store.zadd([task.meta.set, task.meta.set, chunk], function(err, response) {
