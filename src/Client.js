@@ -124,6 +124,8 @@ Client.prototype._write = function(task, encoding, cb) {
   Client.convertTaskToMember(task, function(err, member) {
     if (err) return cb(err);
 
+    //self.store.evalsha([task.meta.set])
+
     self.store.zadd([task.meta.set, task.meta.set, member], function(err, response) {
       if (err) return cb(err);
 

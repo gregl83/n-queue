@@ -9,6 +9,28 @@ function RedisClientMock() {
   ];
 }
 
+
+// number_keys keys args
+RedisClientMock.prototype.evalsha = function(args, cb) {
+  var self = this;
+
+  // check for to make sure args is array
+  if (!Array.isArray(args)) return cb(new Error('ERR syntax error'));
+
+  var sha = args.shift();
+
+  if ('string' !== typeof sha) return cb(new Error('ERR syntax error'));
+
+  if ('undefind' === typeof self[sha]) return cb(new Error('ERR syntax error'));
+
+  self[sha](args, function(err, response) {
+    if (err) return cb(err);
+
+    cb(undefined, response);
+  });
+};
+
+
 RedisClientMock.prototype.zadd = function(args, cb) {
   var self = this;
 
