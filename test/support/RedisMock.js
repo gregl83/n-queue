@@ -32,7 +32,7 @@ RedisClientMock.prototype.evalsha = function(args, cb) {
 };
 
 
-RedisClientMock.prototype._prpush = function(args, cb) {
+RedisClientMock.prototype._plpush = function(args, cb) {
   var self = this;
 
   var key = args.shift();
