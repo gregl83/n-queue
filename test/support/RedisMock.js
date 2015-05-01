@@ -20,11 +20,11 @@ RedisClientMock.prototype.evalsha = function(args, cb) {
   // check for to make sure args is array
   if (!Array.isArray(args)) return cb(new Error('ERR syntax error'));
 
-  var sha = args.shift();
+  var sha = args[0];
 
   if ('string' !== typeof sha || 'undefined' === typeof self[sha]) return cb(new Error('ERR syntax error'));
 
-  self[sha](args, function(err, response) {
+  self[sha](args.slice(1), function(err, response) {
     if (err) return cb(err);
 
     cb(undefined, response);
@@ -35,8 +35,8 @@ RedisClientMock.prototype.evalsha = function(args, cb) {
 RedisClientMock.prototype._plpush = function(args, cb) {
   var self = this;
 
-  var key = args.shift();
-  var priority = args.shift();
+  var key = args[0];
+  var priority = args[1];
 
   if ('string' !== typeof key || 'string' !== typeof priority) return cb(new Error('ERR syntax error'));
 
@@ -46,7 +46,7 @@ RedisClientMock.prototype._plpush = function(args, cb) {
 
   var response = 0;
 
-  args.forEach(function(val) {
+  args.slice(2).forEach(function(val) {
     self.lists[keyspace].push(val);
     response++;
   });
@@ -58,15 +58,15 @@ RedisClientMock.prototype._plpush = function(args, cb) {
 RedisClientMock.prototype._prpoplpush = function(args, cb) {
   var self = this;
 
-  var keysCount = args.shift();
-  var source = args.shift();
-  var destination = args.shift();
+  var keysCount = args[0];
+  var source = args[1];
+  var destination = args[2];
 
   if ('number' !== typeof keysCount || 'string' !== typeof source || 'string' !== destination) return cb(new Error('ERR syntax error'));
 
   var response = null;
 
-  args.every(function(val) {
+  args.slice(3).every(function(val) {
     var sourceKey = source + ':' + val;
 
     if ('undefined' === typeof self.lists[sourceKey]) {
@@ -145,11 +145,8 @@ RedisClientMock.prototype.zadd = function(args, cb) {
 };
 
 
-function RedisMock() {}
-
-RedisMock.prototype.createClient = function() {
-  return new RedisClientMock();
+module.exports = {
+  createClient: function() {
+    return new RedisClientMock();
+  }
 };
-
-
-module.exports = RedisMock;

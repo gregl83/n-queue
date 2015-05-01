@@ -1,4 +1,3 @@
-var Buffer = require('buffer').Buffer;
 var Duplex = require('stream').Duplex;
 
 var should = require('should');
@@ -15,10 +14,9 @@ mockery.enable({
 });
 
 var RedisMock = require('./support/RedisMock');
-var redisMock = new RedisMock();
 
-sinon.spy(redisMock, "createClient");
-mockery.registerMock('redis', redisMock);
+sinon.spy(RedisMock, "createClient");
+mockery.registerMock('redis', RedisMock);
 
 
 var Client = require('../src/Client');
@@ -30,7 +28,7 @@ describe('client', function() {
   });
 
   afterEach(function() {
-    redisMock.createClient.reset();
+    RedisMock.createClient.reset();
   });
 
   it('new client redis server', function(done) {
@@ -42,7 +40,7 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, {});
 
-    redisMock.createClient.calledWithExactly(host, port, options);
+    RedisMock.createClient.calledWithExactly(host, port, options);
 
     (client).should.be.instanceOf(Duplex);
     (client.keyspace).should.be.eql(keyspace);
@@ -59,7 +57,7 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, {prefix: 'prefix'});
 
-    redisMock.createClient.calledWithExactly(host, port, options);
+    RedisMock.createClient.calledWithExactly(host, port, options);
 
     (client).should.be.instanceOf(Duplex);
     (client.keyspace).should.be.eql(keyspace);
@@ -78,6 +76,7 @@ describe('client', function() {
     var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
+    var _plpush = sinon.spy(client.store, '_plpush');
 
     var task = new Task();
 
@@ -95,6 +94,9 @@ describe('client', function() {
       sinon.assert.calledOnce(_write);
       sinon.assert.calledWithExactly(_write, task, 'utf8', sinon.match.func);
 
+      sinon.assert.calledOnce(_plpush);
+      sinon.assert.calledWithExactly(_plpush, [task.meta.set, task.meta.priority, task.toString()], sinon.match.func);
+
       done();
     });
   });
@@ -110,6 +112,7 @@ describe('client', function() {
     var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
+    var _plpush = sinon.spy(client.store, '_plpush');
 
     var tasks = [new Task(), new Task()];
 
@@ -131,6 +134,10 @@ describe('client', function() {
       sinon.assert.calledWithExactly(_write, tasks[0], 'utf8', sinon.match.func);
       sinon.assert.calledWithExactly(_write, tasks[1], 'utf8', sinon.match.func);
 
+      sinon.assert.calledTwice(_plpush);
+      sinon.assert.calledWithExactly(_plpush, [tasks[0].meta.set, tasks[0].meta.priority, tasks[0].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [tasks[1].meta.set, tasks[1].meta.priority, tasks[1].toString()], sinon.match.func);
+
       done();
     });
   });
@@ -143,9 +150,6 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, options);
 
-    var _pushTask = sinon.spy(client, '_pushTask');
-    var write = sinon.spy(client, 'write');
-    var _write = sinon.spy(client, '_write');
     var error = sinon.spy();
 
     client.on('error', error);

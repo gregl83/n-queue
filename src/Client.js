@@ -52,19 +52,6 @@ Client.getKeyspace = function(prefix, queue) {
 
 
 /**
- * Convert a Task object to a Redis Sorted Set Member
- *
- * @param {task} task
- * @param {function} cb
- * @callback
- */
-Client.convertTaskToMember = function(task, cb) {
-  if (task instanceof Task) cb(undefined, task.meta.id + ':' + JSON.stringify(task));
-  else cb(new Error('task must be instanceof Task'));
-};
-
-
-/**
  * Push task to queue
  *
  * @param {string} task
@@ -110,6 +97,8 @@ Client.prototype.pushTasks = function(tasks, cb) {
 
 
 /**
+ * Pushes Task to Data Store
+ *
  * Called by Stream.write
  * See Streams API
  *
@@ -119,25 +108,12 @@ Client.prototype.pushTasks = function(tasks, cb) {
 Client.prototype._write = function(task, encoding, cb) {
   var self = this;
 
-  // todo switch queue to uses plists from n-redis-commands
+  if (!(task instanceof Task)) return cb(new Error('task must be instanceof Task'));
 
-  Client.convertTaskToMember(task, function(err, member) {
-    if (err) return cb(err);
-
-    //self.store.evalsha(['_plpush', task.meta.set, member], function(err, response) {
-    //    if (err) return cb(err);
-    //
-    //    cb();
-    //});
-
-    // fixme uncomment above and remove below
-
-    self.store.zadd([task.meta.set, task.meta.set, member], function(err, response) {
+  self.store.evalsha(['_plpush', task.meta.set, task.meta.priority, task.toString()], function(err, response) {
       if (err) return cb(err);
 
-      // todo handle response (will be count of elements)
-      cb();
-    });
+      cb(undefined, response);
   });
 };
 

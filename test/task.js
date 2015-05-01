@@ -15,7 +15,7 @@ describe('task', function() {
   });
 
   it('new task object task arg', function(done) {
-    var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
+    var oldTask = {meta: {type: "meta" /* meta in array */}, data: {type: "data" /* data in array */}};
 
     var task = new Task(oldTask);
 
@@ -26,7 +26,7 @@ describe('task', function() {
   });
 
   it('new task string task arg', function(done) {
-    var oldTask = {meta: {/* meta in array */}, data: {/* data in array */}};
+    var oldTask = {meta: {type: "meta" /* meta in array */}, data: {type: "data" /* data in array */}};
     var taskString = JSON.stringify(oldTask);
 
     var task = new Task(taskString);
@@ -77,7 +77,7 @@ describe('task', function() {
   it('set priority', function(done) {
     var task = new Task();
 
-    var newPriority = 25;
+    var newPriority = 'low';
 
     (task.meta.priority).should.not.eql(newPriority);
 
@@ -88,22 +88,7 @@ describe('task', function() {
     done();
   });
 
-  it('set priority string', function(done) {
-    var task = new Task();
-
-    var newPriority = 25;
-    var newPriorityString = 'critical'; // hardcoded
-
-    (task.meta.priority).should.not.eql(newPriority);
-
-    task.setPriority(newPriorityString);
-
-    (task.meta.priority).should.be.eql(newPriority);
-
-    done();
-  });
-
-  it('set priority invalid string', function(done) {
+  it('set invalid priority', function(done) {
     var task = new Task();
 
     var newPriorityString = 'invalid'; // hardcoded

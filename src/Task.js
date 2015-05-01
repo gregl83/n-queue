@@ -10,6 +10,7 @@ var uuid = require('node-uuid');
  *    "id" : string,
  *    "schedule" : { ... },
  *    "set" : string,
+ *    "priority" : string.
  *    "sets" : [
  *      { "set" : "scheduled", "date" : [ date, ... ] },
  *      { "set" : "queued", "date" : [ date, ... ] },
@@ -38,7 +39,7 @@ function Task(task) {
       id: Task.getID(),
       schedule: {}, // reserved for scheduler
       set: null,
-      priority: Task.getPriorityScore('high'),
+      priority: 'medium',
       sets: [],
       attempts: {max: 3},
       holds: {duration: 600},
@@ -53,39 +54,36 @@ function Task(task) {
 
 /**
  * Get Unique Task ID
- * Note: RFC4122 v1 UUID is generated using node-uuid module and then
- * the resulting parts 1 and 3 are swapped to allow time based sorting
+ * Note: RFC4122 v1 UUID is generated using node-uuid module
  *
  * @returns {string}
  */
 Task.getID = function() {
-  return uuid.v1().replace(/^(.{8})-(.{4})-(.{4})/, '$3-$2-$1');
+  return uuid.v1();
 };
 
 
 /**
- * String Priority to numerical Sorted Set Score
+ * Valid Task Priorities
  *
- * @type {{critical: number, high: number, medium: number, low: number}}
+ * @type {string}[]
  */
-Task.priorityScores = {
-  'critical': 25,
-  'high': 50, // default
-  'medium': 75,
-  'low': 100
-};
+Task.priorities = [
+  'critical',
+  'high', // default
+  'medium',
+  'low'
+];
 
 
 /**
- * Get a Priority Score for a string Priority label (critical, high, medium, low)
+ * Validate Task Priority (critical, high, medium, low)
  *
  * @param {string} priority
- * @returns {number}
  * @throws {error}
  */
-Task.getPriorityScore = function(priority) {
-  if ('undefined' !== typeof Task.priorityScores[priority]) return Task.priorityScores[priority];
-  throw new Error('invalid priority');
+Task.validatePriority = function(priority) {
+  if (-1 === Task.priorities.indexOf(priority)) throw new Error('invalid priority');
 };
 
 
@@ -115,8 +113,8 @@ Task.prototype.setAttempts = function(max) {
  * @param {string|number} priority
  */
 Task.prototype.setPriority = function(priority) {
-  if ('number' === typeof priority) this.meta.priority = priority;
-  else this.meta.priority = Task.getPriorityScore(priority);
+  Task.validatePriority(priority);
+  this.meta.priority = priority;
 };
 
 
