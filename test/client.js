@@ -73,7 +73,6 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, options);
 
-    var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
     var _plpush = sinon.spy(client.store, '_plpush');
@@ -84,9 +83,6 @@ describe('client', function() {
 
     client.pushTasks(task, function(err) {
       should(err).be.undefined;
-
-      sinon.assert.calledOnce(_pushTask);
-      sinon.assert.calledWithExactly(_pushTask, task, sinon.match.func);
 
       sinon.assert.calledOnce(write);
       sinon.assert.calledWithExactly(write, task, sinon.match.func);
@@ -109,7 +105,6 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, options);
 
-    var _pushTask = sinon.spy(client, '_pushTask');
     var write = sinon.spy(client, 'write');
     var _write = sinon.spy(client, '_write');
     var _plpush = sinon.spy(client.store, '_plpush');
@@ -121,10 +116,6 @@ describe('client', function() {
 
     client.pushTasks(tasks, function(err) {
       should(err).be.undefined;
-
-      sinon.assert.calledTwice(_pushTask);
-      sinon.assert.calledWithExactly(_pushTask, tasks[0], sinon.match.func);
-      sinon.assert.calledWithExactly(_pushTask, tasks[1], sinon.match.func);
 
       sinon.assert.calledTwice(write);
       sinon.assert.calledWithExactly(write, tasks[0], sinon.match.func);

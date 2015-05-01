@@ -52,21 +52,7 @@ Client.getKeyspace = function(prefix, queue) {
 
 
 /**
- * Push task to queue
- *
- * @param {string} task
- * @param {function} cb
- * @private
- */
-Client.prototype._pushTask = function(task, cb) {
-  this.write(task, function(err) {
-    cb(err);
-  });
-};
-
-
-/**
- * Push task to tail of queue
+ * Push Tasks to stream (head of queue)
  * Stream.write
  *
  * @param {task|{task}[]} tasks
@@ -80,7 +66,7 @@ Client.prototype.pushTasks = function(tasks, cb) {
   if (!Array.isArray(tasks)) tasks = [tasks];
 
   var queue = async.queue(function (task, callback) {
-    self._pushTask(task, function(err) {
+    self.write(task, function(err) {
       if (!err) return callback();
 
       error = err;
@@ -110,10 +96,9 @@ Client.prototype._write = function(task, encoding, cb) {
 
   if (!(task instanceof Task)) return cb(new Error('task must be instanceof Task'));
 
-  self.store.evalsha(['_plpush', task.meta.set, task.meta.priority, task.toString()], function(err, response) {
+  self.store.evalsha(['_plpush', task.meta.set, task.meta.priority, task.toString()], function(err) {
       if (err) return cb(err);
-
-      cb(undefined, response);
+      cb(undefined);
   });
 };
 
