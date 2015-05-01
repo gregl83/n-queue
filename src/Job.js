@@ -2,7 +2,7 @@ var uuid = require('node-uuid');
 
 
 /**
- * Queue Task object
+ * Queue Job object
  *
  * Literal Object Structure:
  * {
@@ -24,18 +24,18 @@ var uuid = require('node-uuid');
  *  "data" : { ... }
  * }
  *
- * @param {string} task in JSON string format
+ * @param {string} job in JSON string format
  * @constructor
  */
-function Task(task) {
-  if ('string' === typeof task) task = JSON.parse(task);
-  else if ('object' !== typeof task || Array.isArray(task)) task = {};
+function Job(job) {
+  if ('string' === typeof job) job = JSON.parse(job);
+  else if ('object' !== typeof job || Array.isArray(job)) job = {};
 
   // todo consider making ALL the meta properties optional
-  if ('object' === typeof task.meta && !Array.isArray(task.meta)) this.meta = task.meta;
+  if ('object' === typeof job.meta && !Array.isArray(job.meta)) this.meta = job.meta;
   else {
     this.meta = {
-      id: Task.getID(),
+      id: Job.getID(),
       schedule: {}, // reserved for scheduler
       priority: 'medium',
       attempt: {max: 3},
@@ -46,27 +46,27 @@ function Task(task) {
     };
   }
 
-  this.data = ('object' === typeof task.data && !Array.isArray(task.data)) ? task.data : {};
+  this.data = ('object' === typeof job.data && !Array.isArray(job.data)) ? job.data : {};
 }
 
 
 /**
- * Get Unique Task ID
+ * Get Unique Job ID
  * Note: RFC4122 v1 UUID is generated using node-uuid module
  *
  * @returns {string}
  */
-Task.getID = function() {
+Job.getID = function() {
   return uuid.v1();
 };
 
 
 /**
- * Valid Task Priorities
+ * Valid Job Priorities
  *
  * @type {string}[]
  */
-Task.priorities = [
+Job.priorities = [
   'critical',
   'high', // default
   'medium',
@@ -75,79 +75,79 @@ Task.priorities = [
 
 
 /**
- * Validate Task Priority (critical, high, medium, low)
+ * Validate Job Priority (critical, high, medium, low)
  *
  * @param {string} priority
  * @throws {error}
  */
-Task.validatePriority = function(priority) {
-  if (-1 === Task.priorities.indexOf(priority)) throw new Error('invalid priority');
+Job.validatePriority = function(priority) {
+  if (-1 === Job.priorities.indexOf(priority)) throw new Error('invalid priority');
 };
 
 
 /**
- * Task Statuses
+ * Job Statuses
  *
  * @type {string[]}
  */
-Task.statuses = ['scheduled', 'queued', 'processing', 'done'];
+Job.statuses = ['scheduled', 'queued', 'processing', 'done'];
 
 
 /**
- * Set Task attempt maximum
+ * Set Job attempt maximum
  *
  * @param {number} max
  * @throws {error}
  */
-Task.prototype.setAttempt = function(max) {
+Job.prototype.setAttempt = function(max) {
   if ('number' !== typeof max) throw new Error('attempt max must be a number');
   this.meta.attempt.max = max;
 };
 
 
 /**
- * Set Task priority
+ * Set Job priority
  *
  * @param {string|number} priority
  */
-Task.prototype.setPriority = function(priority) {
-  Task.validatePriority(priority);
+Job.prototype.setPriority = function(priority) {
+  Job.validatePriority(priority);
   this.meta.priority = priority;
 };
 
 
 /**
- * Get Task data object
+ * Get Job data object
  *
  * @returns {object} data reference
  */
-Task.prototype.getData = function() {
+Job.prototype.getData = function() {
   return this.data;
 };
 
 
 /**
- * Set Task data
+ * Set Job data
  *
  * @param {object} data
  * @throws {error}
  */
-Task.prototype.setData = function(data) {
+Job.prototype.setData = function(data) {
   if ('object' !== typeof data) throw new Error('data must be an object');
   this.data = data;
 };
 
 
 /**
- * Set status of Task
+ * Set status of Job
  *
  * @param {string} status
  * @throws {error}
  */
-Task.prototype.setStatus = function(status) {
+Job.prototype.setStatus = function(status) {
   var self = this;
 
-  var statusIndex = Task.statuses.indexOf(status);
+  var statusIndex = Job.statuses.indexOf(status);
   if (-1 === statusIndex) throw new Error('invalid status');
 
   self.meta.status = status;
@@ -173,15 +173,12 @@ Task.prototype.setStatus = function(status) {
 };
 
 
-// todo build task statuses
-
-
 /**
- * Convert Task to JSON string
+ * Convert Job to JSON string
  *
- * @returns {string} task in JSON string format
+ * @returns {string} job in JSON string format
  */
-Task.prototype.toString = function() {
+Job.prototype.toString = function() {
   return JSON.stringify({
     meta: this.meta,
     data: this.data
@@ -189,4 +186,4 @@ Task.prototype.toString = function() {
 };
 
 
-module.exports = Task;
+module.exports = Job;

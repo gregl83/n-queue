@@ -6,7 +6,7 @@ var async = require('async');
 var redis = require('redis');
 var redisCommands = require('n-redis-commands');
 
-var Task = require('./Task');
+var Job = require('./Job');
 
 
 /**
@@ -69,21 +69,21 @@ Client.getCommandSHA = function(command) {
 
 
 /**
- * Push Tasks to stream (head of queue)
+ * Push Job(s) to stream (head of queue)
  * Stream.write
  *
- * @param {task|{task}[]} tasks
+ * @param {job|{job}[]} jobs
  * @param {function} [cb]
  * @async
  */
-Client.prototype.pushTasks = function(tasks, cb) {
+Client.prototype.pushJob = function(jobs, cb) {
   var self = this;
   var error = undefined;
 
-  if (!Array.isArray(tasks)) tasks = [tasks];
+  if (!Array.isArray(jobs)) jobs = [jobs];
 
-  var queue = async.queue(function (task, callback) {
-    self.write(task, function(err) {
+  var queue = async.queue(function (job, callback) {
+    self.write(job, function(err) {
       if (!err) return callback();
 
       error = err;
@@ -95,12 +95,12 @@ Client.prototype.pushTasks = function(tasks, cb) {
     if ('function' === typeof cb) cb(error);
   };
 
-  queue.push(tasks);
+  queue.push(jobs);
 };
 
 
 /**
- * Pushes Task to Data Store
+ * Pushes Job to Data Store
  *
  * Called by Stream.write
  * See Streams API
@@ -108,12 +108,12 @@ Client.prototype.pushTasks = function(tasks, cb) {
  * @private
  * @inheritdoc
  */
-Client.prototype._write = function(task, encoding, cb) {
+Client.prototype._write = function(job, encoding, cb) {
   var self = this;
 
-  if (!(task instanceof Task)) return cb(new Error('task must be instanceof Task'));
+  if (!(job instanceof Job)) return cb(new Error('job must be instanceof Job'));
 
-  self.store.evalsha([self.redisCommandsSHA.plpush, task.meta.status, task.meta.priority, task.toString()], function(err) {
+  self.store.evalsha([self.redisCommandsSHA.plpush, job.meta.status, job.meta.priority, job.toString()], function(err) {
       if (err) return cb(err);
       cb(undefined);
   });
@@ -121,17 +121,17 @@ Client.prototype._write = function(task, encoding, cb) {
 
 
 /**
- * Get task from head of queue
+ * Get job from head of queue
  * Stream.read
  *
  * @async
  */
-Client.prototype.readTasks = function() {
+Client.prototype.readJob = function() {
   // todo use n-redis-commands
 
   //var self = this;
-  //var task = JSON.parse(chunk.toString('utf8'));
-  //self.store.zadd([task.meta.set, task.meta.set, chunk], function(err, response) {
+  //var job = JSON.parse(chunk.toString('utf8'));
+  //self.store.zadd([job.meta.set, job.meta.set, chunk], function(err, response) {
   //  // todo handle response (will be count of elements)
   //  if (err) return cb(err);
   //  cb();
@@ -147,7 +147,7 @@ Client.prototype.readTasks = function() {
  * @inheritdoc
  */
 Client.prototype._read = function(size) {
-  // todo get task(s) from queue and push to stream
+  // todo get job(s) from queue and push to stream
 };
 
 

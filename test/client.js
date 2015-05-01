@@ -4,7 +4,7 @@ var should = require('should');
 var mockery = require('mockery');
 var sinon = require('sinon');
 
-var Task = require('../src/Task');
+var Job = require('../src/Job');
 
 
 mockery.enable({
@@ -70,7 +70,7 @@ describe('client', function() {
     done();
   });
 
-  it('push task to queue', function(done) {
+  it('push job to queue', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
     var queue = 'queue';
@@ -82,27 +82,27 @@ describe('client', function() {
     var _write = sinon.spy(client, '_write');
     var _plpush = sinon.spy(client.store, '_plpush');
 
-    var task = new Task();
+    var job = new Job();
 
-    task.setStatus('queued');
+    job.setStatus('queued');
 
-    client.pushTasks(task, function(err) {
+    client.pushJob(job, function(err) {
       should(err).be.undefined;
 
       sinon.assert.calledOnce(write);
-      sinon.assert.calledWithExactly(write, task, sinon.match.func);
+      sinon.assert.calledWithExactly(write, job, sinon.match.func);
 
       sinon.assert.calledOnce(_write);
-      sinon.assert.calledWithExactly(_write, task, 'utf8', sinon.match.func);
+      sinon.assert.calledWithExactly(_write, job, 'utf8', sinon.match.func);
 
       sinon.assert.calledOnce(_plpush);
-      sinon.assert.calledWithExactly(_plpush, [task.meta.status, task.meta.priority, task.toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [job.meta.status, job.meta.priority, job.toString()], sinon.match.func);
 
       done();
     });
   });
 
-  it('push task array to queue', function(done) {
+  it('push job array to queue', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
     var queue = 'queue';
@@ -114,31 +114,31 @@ describe('client', function() {
     var _write = sinon.spy(client, '_write');
     var _plpush = sinon.spy(client.store, '_plpush');
 
-    var tasks = [new Task(), new Task()];
+    var jobs = [new Job(), new Job()];
 
-    tasks[0].setStatus('scheduled');
-    tasks[1].setStatus('queued');
+    jobs[0].setStatus('scheduled');
+    jobs[1].setStatus('queued');
 
-    client.pushTasks(tasks, function(err) {
+    client.pushJob(jobs, function(err) {
       should(err).be.undefined;
 
       sinon.assert.calledTwice(write);
-      sinon.assert.calledWithExactly(write, tasks[0], sinon.match.func);
-      sinon.assert.calledWithExactly(write, tasks[1], sinon.match.func);
+      sinon.assert.calledWithExactly(write, jobs[0], sinon.match.func);
+      sinon.assert.calledWithExactly(write, jobs[1], sinon.match.func);
 
       sinon.assert.calledTwice(_write);
-      sinon.assert.calledWithExactly(_write, tasks[0], 'utf8', sinon.match.func);
-      sinon.assert.calledWithExactly(_write, tasks[1], 'utf8', sinon.match.func);
+      sinon.assert.calledWithExactly(_write, jobs[0], 'utf8', sinon.match.func);
+      sinon.assert.calledWithExactly(_write, jobs[1], 'utf8', sinon.match.func);
 
       sinon.assert.calledTwice(_plpush);
-      sinon.assert.calledWithExactly(_plpush, [tasks[0].meta.status, tasks[0].meta.priority, tasks[0].toString()], sinon.match.func);
-      sinon.assert.calledWithExactly(_plpush, [tasks[1].meta.status, tasks[1].meta.priority, tasks[1].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [jobs[0].meta.status, jobs[0].meta.priority, jobs[0].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [jobs[1].meta.status, jobs[1].meta.priority, jobs[1].toString()], sinon.match.func);
 
       done();
     });
   });
 
-  it('push invalid task to queue', function(done) {
+  it('push invalid job to queue', function(done) {
     var host = "127.0.0.1";
     var port = 6379;
     var queue = 'queue';
@@ -150,9 +150,9 @@ describe('client', function() {
 
     client.on('error', error);
 
-    var tasks = 'invalid';
+    var jobs = 'invalid';
 
-    client.pushTasks(tasks, function(err) {
+    client.pushJob(jobs, function(err) {
       should(err).not.be.undefined;
 
       sinon.assert.calledOnce(error);
@@ -162,5 +162,5 @@ describe('client', function() {
     });
   });
 
-  // todo readTasks tests
+  // todo readJobs tests
 });
