@@ -21,6 +21,11 @@ mockery.registerMock('redis', RedisMock);
 
 var Client = require('../src/Client');
 
+sinon.stub(Client, 'getCommandSHA', function(command) {
+
+  return '_' + command;
+});
+
 
 describe('client', function() {
   after(function() {
@@ -79,7 +84,7 @@ describe('client', function() {
 
     var task = new Task();
 
-    task.pushSet('queued');
+    task.setStatus('queued');
 
     client.pushTasks(task, function(err) {
       should(err).be.undefined;
@@ -91,7 +96,7 @@ describe('client', function() {
       sinon.assert.calledWithExactly(_write, task, 'utf8', sinon.match.func);
 
       sinon.assert.calledOnce(_plpush);
-      sinon.assert.calledWithExactly(_plpush, [task.meta.set, task.meta.priority, task.toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [task.meta.status, task.meta.priority, task.toString()], sinon.match.func);
 
       done();
     });
@@ -111,8 +116,8 @@ describe('client', function() {
 
     var tasks = [new Task(), new Task()];
 
-    tasks[0].pushSet('scheduled');
-    tasks[1].pushSet('queued');
+    tasks[0].setStatus('scheduled');
+    tasks[1].setStatus('queued');
 
     client.pushTasks(tasks, function(err) {
       should(err).be.undefined;
@@ -126,8 +131,8 @@ describe('client', function() {
       sinon.assert.calledWithExactly(_write, tasks[1], 'utf8', sinon.match.func);
 
       sinon.assert.calledTwice(_plpush);
-      sinon.assert.calledWithExactly(_plpush, [tasks[0].meta.set, tasks[0].meta.priority, tasks[0].toString()], sinon.match.func);
-      sinon.assert.calledWithExactly(_plpush, [tasks[1].meta.set, tasks[1].meta.priority, tasks[1].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [tasks[0].meta.status, tasks[0].meta.priority, tasks[0].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(_plpush, [tasks[1].meta.status, tasks[1].meta.priority, tasks[1].toString()], sinon.match.func);
 
       done();
     });

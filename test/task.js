@@ -48,27 +48,27 @@ describe('task', function() {
     done();
   });
 
-  it('set attempts', function(done) {
+  it('set attempt', function(done) {
     var task = new Task();
 
-    var newAttempts = 305;
+    var newAttempt = 305;
 
-    (task.meta.attempts.max).should.not.eql(newAttempts);
+    (task.meta.attempt.max).should.not.eql(newAttempt);
 
-    task.setAttempts(newAttempts);
+    task.setAttempt(newAttempt);
 
-    (task.meta.attempts.max).should.be.eql(newAttempts);
+    (task.meta.attempt.max).should.be.eql(newAttempt);
 
     done();
   });
 
-  it('set attempts max invalid', function(done) {
+  it('set attempt max invalid', function(done) {
     var task = new Task();
 
-    var newAttempts = '305';
+    var newAttempt = '305';
 
     should.throws(function() {
-      task.setAttempts(newAttempts);
+      task.setAttempt(newAttempt);
     });
 
     done();
@@ -142,49 +142,49 @@ describe('task', function() {
     done();
   });
 
-  it('push sets', function(done) {
+  it('set status', function(done) {
     var task = new Task();
 
-    var setAName = 'scheduled';
-    var setBName = 'queued';
+    var statusA = 'scheduled';
+    var statusB = 'queued';
 
-    task.pushSet(setAName);
+    task.setStatus(statusA);
 
-    (task.meta.sets).should.have.length(1);
-    (task.meta.set).should.be.eql(setAName);
-    (task.meta.sets[0].set).should.be.eql(setAName);
+    (task.meta.status).should.be.eql(statusA);
+    (task.meta.log).should.have.length(1);
+    (task.meta.log[0].status).should.be.eql(statusA);
 
-    task.pushSet(setBName);
+    task.setStatus(statusB);
 
-    (task.meta.sets).should.have.length(2);
-    (task.meta.set).should.be.eql(setBName);
-    (task.meta.sets[1].set).should.be.eql(setBName);
+    (task.meta.status).should.be.eql(statusB);
+    (task.meta.log).should.have.length(2);
+    (task.meta.log[1].status).should.be.eql(statusB);
 
     done();
   });
 
-  it('push existing set', function(done) {
+  it('set existing status', function(done) {
     var task = new Task();
 
-    var setName = 'scheduled';
+    var status = 'scheduled';
 
-    task.pushSet(setName);
-    task.pushSet(setName);
+    task.setStatus(status);
+    task.setStatus(status);
 
-    (task.meta.set).should.be.eql(setName);
-    (task.meta.sets[0].set).should.be.eql(setName);
-    (task.meta.sets[0].date).should.have.length(2);
+    (task.meta.status).should.be.eql(status);
+    (task.meta.log[0].status).should.be.eql(status);
+    (task.meta.log[0].date).should.have.length(2);
 
     done();
   });
 
-  it('push set invalid setName', function(done) {
+  it('set invalid status', function(done) {
     var task = new Task();
 
-    var setName = 'invalid';
+    var status = 'invalid';
 
     should.throws(function() {
-      task.pushSet(setName);
+      task.setStatus(status);
     });
 
     done();

@@ -27,12 +27,18 @@ var Task = require('./Task');
 function Client(host, port, queue, options) {
   var self = this;
 
-  Duplex.call(self, {objectMode: true});  // todo setup stream options
+  // todo setup stream options
+  Duplex.call(self, {objectMode: true});
 
   self.keyspace = Client.getKeyspace(options.prefix, queue);
 
-  self.store = redis.createClient(port, host);
   // todo set redis database
+  self.store = redis.createClient(port, host);
+
+  self.redisCommandsSHA = {
+    plpush: Client.getCommandSHA('plpush'),
+    prpoplpush: Client.getCommandSHA('prpoplpush')
+  };
 }
 
 
@@ -48,6 +54,17 @@ util.inherits(Client, Duplex);
  */
 Client.getKeyspace = function(prefix, queue) {
   return (('undefined' !== typeof prefix) ? prefix : config.get('prefix')) + ':' + queue;
+};
+
+
+/**
+ * Get Redis Command SHA
+ *
+ * @param {string} command
+ * @returns {string} commandSHA
+ */
+Client.getCommandSHA = function(command) {
+  return redisCommands(command);
 };
 
 
@@ -96,7 +113,7 @@ Client.prototype._write = function(task, encoding, cb) {
 
   if (!(task instanceof Task)) return cb(new Error('task must be instanceof Task'));
 
-  self.store.evalsha(['_plpush', task.meta.set, task.meta.priority, task.toString()], function(err) {
+  self.store.evalsha([self.redisCommandsSHA.plpush, task.meta.status, task.meta.priority, task.toString()], function(err) {
       if (err) return cb(err);
       cb(undefined);
   });

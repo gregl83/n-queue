@@ -9,18 +9,17 @@ var uuid = require('node-uuid');
  *  "meta" : {
  *    "id" : string,
  *    "schedule" : { ... },
- *    "set" : string,
  *    "priority" : string.
- *    "sets" : [
- *      { "set" : "scheduled", "date" : [ date, ... ] },
- *      { "set" : "queued", "date" : [ date, ... ] },
- *      { "set" : "processing", "date" : [ date, ... ] },
- *      { "set" : "done", "date" : [ date, ... ] }
- *    ],
- *    "attempts" : { "max" : number },
- *    "holds" : { "duration" : number }
+ *    "attempt" : { "max" : number },
+ *    "hold" : { "duration" : number }
  *    "status" : string,
- *    "errors" : [ error, ... ]
+ *    "log" : [
+ *      { "status" : "scheduled", "date" : [ date, ... ] },
+ *      { "status" : "queued", "date" : [ date, ... ] },
+ *      { "status" : "processing", "date" : [ date, ... ] },
+ *      { "status" : "done", "date" : [ date, ... ] }
+ *    ],
+ *    "error" : [ error, ... ]
  *  },
  *  "data" : { ... }
  * }
@@ -38,13 +37,12 @@ function Task(task) {
     this.meta = {
       id: Task.getID(),
       schedule: {}, // reserved for scheduler
-      set: null,
       priority: 'medium',
-      sets: [],
-      attempts: {max: 3},
-      holds: {duration: 600},
-      // todo status: 'new',
-      errors: []
+      attempt: {max: 3},
+      hold: {duration: 600},
+      status: null,
+      log: [],
+      error: []
     };
   }
 
@@ -88,27 +86,27 @@ Task.validatePriority = function(priority) {
 
 
 /**
- * Task Sets
+ * Task Statuses
  *
  * @type {string[]}
  */
-Task.sets = ['scheduled', 'queued', 'processing', 'done'];
+Task.statuses = ['scheduled', 'queued', 'processing', 'done'];
 
 
 /**
- * Set Task number of Attempts
+ * Set Task attempt maximum
  *
  * @param {number} max
  * @throws {error}
  */
-Task.prototype.setAttempts = function(max) {
-  if ('number' !== typeof max) throw new Error('attempts max must be a number');
-  this.meta.attempts.max = max;
+Task.prototype.setAttempt = function(max) {
+  if ('number' !== typeof max) throw new Error('attempt max must be a number');
+  this.meta.attempt.max = max;
 };
 
 
 /**
- * Sets the Task Priority
+ * Set Task priority
  *
  * @param {string|number} priority
  */
@@ -119,7 +117,7 @@ Task.prototype.setPriority = function(priority) {
 
 
 /**
- * Gets Task Data object
+ * Get Task data object
  *
  * @returns {object} data reference
  */
@@ -129,7 +127,7 @@ Task.prototype.getData = function() {
 
 
 /**
- * Set Task Data
+ * Set Task data
  *
  * @param {object} data
  * @throws {error}
@@ -141,33 +139,34 @@ Task.prototype.setData = function(data) {
 
 
 /**
- * Push Set to Task or update existing Set
- * @param setName
+ * Set status of Task
+ *
+ * @param {string} status
  * @throws {error}
  */
-Task.prototype.pushSet = function(setName) {
+Task.prototype.setStatus = function(status) {
   var self = this;
 
-  var setIndex = Task.sets.indexOf(setName);
-  if (-1 === setIndex) throw new Error('invalid set');
+  var statusIndex = Task.statuses.indexOf(status);
+  if (-1 === statusIndex) throw new Error('invalid status');
 
-  self.meta.set = setName;
+  self.meta.status = status;
 
-  var setsIndex = null;
+  var logIndex = null;
 
-  self.meta.sets.every(function(taskSet, key) {
-    if (setName === taskSet.set) {
-      setsIndex = key;
+  self.meta.log.every(function(log, key) {
+    if (status === log.status) {
+      logIndex = key;
       return false;
     }
     else return true;
   });
 
-  if (null !== setsIndex) {
-    self.meta.sets[setsIndex].date.push(new Date());
+  if (null !== logIndex) {
+    self.meta.log[logIndex].date.push(new Date());
   } else {
-    self.meta.sets.push({
-      set: setName,
+    self.meta.log.push({
+      status: status,
       date: [new Date()]
     });
   }
