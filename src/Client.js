@@ -121,33 +121,23 @@ Client.prototype._write = function(job, encoding, cb) {
 
 
 /**
- * Get job from head of queue
- * Stream.read
- *
- * @async
- */
-Client.prototype.readJob = function() {
-  // todo use n-redis-commands
-
-  //var self = this;
-  //var job = JSON.parse(chunk.toString('utf8'));
-  //self.store.zadd([job.meta.set, job.meta.set, chunk], function(err, response) {
-  //  // todo handle response (will be count of elements)
-  //  if (err) return cb(err);
-  //  cb();
-  //});
-};
-
-
-/**
  * Called by Stream.read
+ *
  * See Streams API
  *
+ * @param {number} size
  * @private
  * @inheritdoc
  */
 Client.prototype._read = function(size) {
-  // todo get job(s) from queue and push to stream
+  //var self = this;
+
+  // todo prpoplpush job from queue status
+
+  //var job = new Job();
+
+
+  //self.push(job);
 };
 
 
@@ -156,7 +146,7 @@ Client.prototype._read = function(size) {
  *
  * @async
  */
-Client.prototype.stat = function() {
+Client.prototype.getStatus = function() {
   // todo return status of queue data
 };
 
