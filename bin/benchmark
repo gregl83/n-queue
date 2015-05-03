@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+PACKAGE_DIR=$(dirname $SCRIPT_DIR)
+SRC="$PACKAGE_DIR/benchmark/$1.js"
+
+if [ ! -e "$SRC" ]
+then
+    echo "script path argument missing"
+    exit
+fi
+
+node $SRC
