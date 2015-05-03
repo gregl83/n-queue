@@ -40,9 +40,16 @@ Events.prototype._read = function() {
 
   if (benchmark._iterations <= request) self.push(null);
   else {
-    client.evalsha([SHA, 2, 'queued', 'processed', 'critical'], function(err, data) {
+    // using native function (manage keys in code)
+    client.rpoplpush(['queued:critical', 'processed:critical'], function(err, data) {
       self.push(data);
     });
+
+    // todo remove sha usage and redis-commands lib
+    // using sha
+    //client.evalsha([SHA, 2, 'queued', 'processed', 'critical'], function(err, data) {
+    //  self.push(data);
+    //});
   }
 };
 
