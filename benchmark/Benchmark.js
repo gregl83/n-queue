@@ -1,5 +1,5 @@
 /**
- * Benchmarking tool
+ * JavaScript Benchmark Object
  *
  * @param {object} options
  * @constructor
@@ -7,32 +7,41 @@
 function Benchmark(options) {
   var self = this;
 
-  self._iterations = ('undefined' !== typeof options.iterations) ? options.iterations : 10000000;
   self._start = self._end = Date.now();
-  self._reqs = 0;
 
-  self._results = {
-    r: 0,
-    ms: 0,
-    rps: 0
-  };
+  self._events = {};
+
+  if ('undefined' !== options.events) {
+    options.events.forEach(function(event) {
+      self._events[event] = 0;
+    });
+  }
+
+  self._ended = false;
+
+  self._results = {elapsedTime: 0};
 }
 
 
 /**
- * Get Results
+ * Set Benchmark Results
  */
-Benchmark.getResults = function() {
+Benchmark.setResults = function() {
   var self = this;
 
-  self._results.r = self._reqs;
-  self._results.ms = self._end - self._start;
-  self._results.rps = Math.floor(self._results.r / (self._results.ms / 1000));
+  self._results.elapsedTime = self._end - self._start;
+
+  Object.keys(self._events).forEach(function(event) {
+    self._results[event] = {
+      total: self._events[event],
+      perSecond: Math.floor(self._events[event] / (self._results.elapsedTime / 1000))
+    };
+  });
 };
 
 
 /**
- * Start Time
+ * Record Start Time
  */
 Benchmark.prototype.start = function() {
   this._start = Date.now();
@@ -40,27 +49,35 @@ Benchmark.prototype.start = function() {
 
 
 /**
- * End Time
+ * Record End Time
  */
 Benchmark.prototype.end = function() {
   this._end = Date.now();
-  Benchmark.getResults.call(this);
+
+  Benchmark.setResults.call(this);
 };
 
 
 /**
- * Increment Request Count
+ * Log Event (increment event count by one)
+ *
+ * @param {string} name
+ * @returns {number}
  */
-Benchmark.prototype.request = function() {
-  return ++this._reqs;
+Benchmark.prototype.event = function(name) {
+  return ++this._events[name];
 };
 
 
 /**
- * Output Results
+ * Get Benchmark Results
  */
-Benchmark.prototype.results = function() {
-  console.log(this._results);
+Benchmark.prototype.getResults = function() {
+  var self = this;
+
+  if (!self.ended) self.end();
+
+  return this._results;
 };
 
 

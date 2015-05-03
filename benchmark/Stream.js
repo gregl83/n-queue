@@ -3,11 +3,10 @@ var Duplex = require('stream').Duplex;
 
 var redis = require('redis');
 var client = redis.createClient();
-var redisCommands = require('n-redis-commands');
-var SHA = redisCommands('prpoplpush');
 
+var iterations = 100000;
 var Benchmark = require('./Benchmark');
-var benchmark = new Benchmark({iterations: 10000000});
+var benchmark = new Benchmark({events: ['reqs']});
 
 
 function Stream() {
@@ -22,11 +21,9 @@ util.inherits(Stream, Duplex);
 Stream.prototype._read = function() {
   var self = this;
 
-  var request = benchmark.request();
-
-  if (benchmark._iterations <= request) self.push(null);
+  if (iterations == benchmark.event('reqs')) self.push(null);
   else {
-    client.evalsha([SHA, 2, 'queued', 'processed', 'critical'], function(err, data) {
+    client.rpoplpush(['queued:critical', 'processed:critical'], function(err, data) {
       self.push(data);
     });
   }
@@ -52,8 +49,7 @@ stream.on('error', function(err) {
 });
 
 stream.on('end', function() {
-  benchmark.end();
-  benchmark.results();
+  var results = benchmark.getResults();
 
-  console.log('stream ended');
+  console.log('stream ended', results);
 });
