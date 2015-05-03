@@ -3,8 +3,8 @@ var redis = require('redis');
 var client = redis.createClient();
 
 var iterations = 100000;
-var Benchmark = require('./Benchmark');
-var benchmark = new Benchmark({events: ['reqs']});
+var Benchmark = require('quick-bench');
+var benchmark = new Benchmark();
 
 
 function Callbacks() {}
@@ -24,9 +24,10 @@ Callbacks.prototype.error = function(err) {
 
 
 Callbacks.prototype.end = function() {
-  var results = benchmark.getResults();
+  var results = benchmark.results();
 
   console.log('callbacks ended', results);
+  process.exit();
 };
 
 

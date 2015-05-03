@@ -5,8 +5,8 @@ var redis = require('redis');
 var client = redis.createClient();
 
 var iterations = 100000;
-var Benchmark = require('./Benchmark');
-var benchmark = new Benchmark({events: ['reqs']});
+var Benchmark = require('quick-bench');
+var benchmark = new Benchmark();
 
 
 function Events() {
@@ -69,9 +69,10 @@ events.on('error', function(err) {
 });
 
 events.on('end', function() {
-  var results = benchmark.getResults();
+  var results = benchmark.results();
 
   console.log('events ended', results);
+  process.exit();
 });
 
 events.read();

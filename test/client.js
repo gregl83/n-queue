@@ -22,7 +22,6 @@ mockery.registerMock('redis', RedisMock);
 var Client = require('../src/Client');
 
 sinon.stub(Client, 'getCommandSHA', function(command) {
-
   return '_' + command;
 });
 

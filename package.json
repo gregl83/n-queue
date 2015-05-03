@@ -32,7 +32,8 @@
     "mockery": "1.4.X",
     "sinon": "1.14.x",
     "coveralls": "2.11.x",
-    "istanbul": "0.3.x"
+    "istanbul": "0.3.x",
+    "quick-bench": "0.1.x"
   },
   "dependencies": {
     "commander": "2.7.x",
