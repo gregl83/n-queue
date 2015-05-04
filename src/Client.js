@@ -116,21 +116,6 @@ Client.prototype._write = function(job, encoding, cb) {
 
 
 /**
- * Push Job to EventEmitter (readable)
- *
- * @fires Client#end
- * @fires Client#readable
- */
-Client.prototype.push = function(job) {
-  var self = this;
-
-  if (null === job) return self.emit('end');
-
-  self.emit('readable', job);
-};
-
-
-/**
  * Read Job(s) from Data Store
  *
  * @param {string} source
@@ -152,8 +137,25 @@ Client.prototype._read = function(source, destination) {
   var self = this;
 
   self.store.evalsha([self.redisCommandsSHA.prpoplpush, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
-    self.push(data);
+    // todo error handling
+    self._push(data);
   });
+};
+
+
+/**
+ * Push Job to EventEmitter (readable)
+ *
+ * @fires Client#end
+ * @fires Client#readable
+ * @private
+ */
+Client.prototype._push = function(job) {
+  var self = this;
+
+  if (null === job) return self.emit('end');
+
+  self.emit('readable', job);
 };
 
 
