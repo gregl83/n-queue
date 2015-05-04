@@ -1,5 +1,5 @@
 var util = require('util');
-var Duplex = require('stream').Duplex;
+var EventEmitter = require('events').EventEmitter;
 
 var config = require('config');
 var async = require('async');
@@ -12,23 +12,19 @@ var Job = require('./Job');
 /**
  * nQueue Client for all queue CRUD operations
  *
- * CAUTION: Error Event Handler Should Be Implemented
- *
- * Client is a Stream and will throw an exception if an error occurs without
- * at least one error event handler bound.
+ * Client inherits from EventEmitter
  *
  * @param {string} host
  * @param {string|number} port
  * @param {string} queue
  * @param {object} options
  * @constructor
- * @augments Stream
+ * @augments EventEmitter
  */
 function Client(host, port, queue, options) {
   var self = this;
 
-  // todo setup stream options
-  Duplex.call(self, {objectMode: true});
+  EventEmitter.call(self);
 
   self.keyspace = Client.getKeyspace(options.prefix, queue);
 
@@ -42,7 +38,7 @@ function Client(host, port, queue, options) {
 }
 
 
-util.inherits(Client, Duplex);
+util.inherits(Client, EventEmitter);
 
 
 /**
@@ -69,21 +65,20 @@ Client.getCommandSHA = function(command) {
 
 
 /**
- * Push Job(s) to stream (head of queue)
- * Stream.write
+ * Write Job(s) to Data Store (head of queue)
  *
  * @param {job|{job}[]} jobs
- * @param {function} [cb]
+ * @param {function} [cb] optional
  * @async
  */
-Client.prototype.pushJob = function(jobs, cb) {
+Client.prototype.write = function(jobs, cb) {
   var self = this;
   var error = undefined;
 
   if (!Array.isArray(jobs)) jobs = [jobs];
 
   var queue = async.queue(function (job, callback) {
-    self.write(job, function(err) {
+    self._write(job, 'utf8', function(err) {
       if (!err) return callback();
 
       error = err;
@@ -92,6 +87,7 @@ Client.prototype.pushJob = function(jobs, cb) {
   }, 10);
 
   queue.drain = function() {
+    if (error) self.emit('error', error); // fixme handle errors with job
     if ('function' === typeof cb) cb(error);
   };
 
@@ -100,13 +96,12 @@ Client.prototype.pushJob = function(jobs, cb) {
 
 
 /**
- * Pushes Job to Data Store
+ * Write Job to Data Store
  *
- * Called by Stream.write
- * See Streams API
- *
+ * @param {job} job
+ * @param {string} encoding
+ * @param {function} cb
  * @private
- * @inheritdoc
  */
 Client.prototype._write = function(job, encoding, cb) {
   var self = this;
@@ -121,23 +116,44 @@ Client.prototype._write = function(job, encoding, cb) {
 
 
 /**
- * Called by Stream.read
+ * Push Job to EventEmitter (readable)
  *
- * See Streams API
- *
- * @param {number} size
- * @private
- * @inheritdoc
+ * @fires Client#end
+ * @fires Client#readable
  */
-Client.prototype._read = function(size) {
-  //var self = this;
+Client.prototype.push = function(job) {
+  var self = this;
 
-  // todo prpoplpush job from queue status
+  if (null === job) return self.emit('end');
 
-  //var job = new Job();
+  self.emit('readable', job);
+};
 
 
-  //self.push(job);
+/**
+ * Read Job(s) from Data Store
+ *
+ * @param {string} source
+ * @param {string} destination
+ */
+Client.prototype.read = function(source, destination) {
+  this._read(source, destination);
+};
+
+
+/**
+ * Read Job(s) from Data Store in order of priority
+ *
+ * @param {string} source
+ * @param {string} destination
+ * @private
+ */
+Client.prototype._read = function(source, destination) {
+  var self = this;
+
+  self.store.evalsha([self.redisCommandsSHA.prpoplpush, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
+    self.push(data);
+  });
 };
 
 

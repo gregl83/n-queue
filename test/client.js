@@ -1,4 +1,4 @@
-var Duplex = require('stream').Duplex;
+var EventEmitter = require('events').EventEmitter;
 
 var should = require('should');
 var mockery = require('mockery');
@@ -46,7 +46,7 @@ describe('client', function() {
 
     RedisMock.createClient.calledWithExactly(host, port, options);
 
-    (client).should.be.instanceOf(Duplex);
+    (client).should.be.instanceOf(EventEmitter);
     (client.keyspace).should.be.eql(keyspace);
 
     done();
@@ -63,7 +63,7 @@ describe('client', function() {
 
     RedisMock.createClient.calledWithExactly(host, port, options);
 
-    (client).should.be.instanceOf(Duplex);
+    (client).should.be.instanceOf(EventEmitter);
     (client.keyspace).should.be.eql(keyspace);
 
     done();
@@ -85,11 +85,8 @@ describe('client', function() {
 
     job.setStatus('queued');
 
-    client.pushJob(job, function(err) {
+    client.write(job, function(err) {
       should(err).be.undefined;
-
-      sinon.assert.calledOnce(write);
-      sinon.assert.calledWithExactly(write, job, sinon.match.func);
 
       sinon.assert.calledOnce(_write);
       sinon.assert.calledWithExactly(_write, job, 'utf8', sinon.match.func);
@@ -118,12 +115,8 @@ describe('client', function() {
     jobs[0].setStatus('scheduled');
     jobs[1].setStatus('queued');
 
-    client.pushJob(jobs, function(err) {
+    client.write(jobs, function(err) {
       should(err).be.undefined;
-
-      sinon.assert.calledTwice(write);
-      sinon.assert.calledWithExactly(write, jobs[0], sinon.match.func);
-      sinon.assert.calledWithExactly(write, jobs[1], sinon.match.func);
 
       sinon.assert.calledTwice(_write);
       sinon.assert.calledWithExactly(_write, jobs[0], 'utf8', sinon.match.func);
@@ -151,7 +144,7 @@ describe('client', function() {
 
     var jobs = 'invalid';
 
-    client.pushJob(jobs, function(err) {
+    client.write(jobs, function(err) {
       should(err).not.be.undefined;
 
       sinon.assert.calledOnce(error);

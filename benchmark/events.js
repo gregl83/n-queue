@@ -28,7 +28,7 @@ Events.prototype.push = function(data) {
 
   self.buffer.push(data); // fake buffer
 
-  self.emit('read', self.buffer.shift()); // remove from fake buffer
+  self.emit('readable', self.buffer.shift()); // remove from fake buffer
 };
 
 
@@ -59,7 +59,7 @@ console.log('events started');
 
 var events = new Events();
 
-events.on('read', function(obj) {
+events.on('readable', function(obj) {
   //console.log('events read', obj);
   events.read();
 });
