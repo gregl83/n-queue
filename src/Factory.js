@@ -1,6 +1,7 @@
 var config = require('config');
 
 var Client = require('./Client');
+var Job = require('./Job');
 
 /**
  * Creates a new nQueue Client
@@ -23,4 +24,15 @@ module.exports.createClient = function(host, port, options) {
   var queue = ('undefined' !== typeof options.queue) ? options.queue : config.get('stores')[0].queue;
 
   return new Client(host, port, queue, options);
+};
+
+
+/**
+ * Creates a new nQueue Job
+ *
+ * @param {string} job
+ * @returns {Job}
+ */
+module.exports.createJob = function(job) {
+  return new Job(job);
 };

@@ -9,11 +9,11 @@ mockery.enable({
   warnOnUnregistered: false
 });
 
-exports.Client = function() {/* Client constructor Mock */};
+var Client = sinon.stub();
+var Job = sinon.stub();
 
-var ClientSpy = sinon.spy(exports, 'Client');
-
-mockery.registerMock('./Client', ClientSpy);
+mockery.registerMock('./Client', Client);
+mockery.registerMock('./Job', Job);
 
 
 var nQueue = require('../');
@@ -25,7 +25,8 @@ describe('factory', function() {
   });
 
   afterEach(function() {
-    ClientSpy.reset();
+    Client.reset();
+    Job.reset();
   });
 
   it('create client sans options', function(done) {
@@ -34,7 +35,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port);
 
-    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.string, sinon.match.object);
+    sinon.assert.calledWithExactly(Client, host, port, sinon.match.string, sinon.match.object);
 
     done();
   });
@@ -46,7 +47,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port, options);
 
-    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.string, options);
+    sinon.assert.calledWithExactly(Client, host, port, sinon.match.string, options);
 
     done();
   });
@@ -60,7 +61,7 @@ describe('factory', function() {
       nQueue.createClient(host, port, options);
     });
 
-    sinon.assert.notCalled(ClientSpy);
+    sinon.assert.notCalled(Client);
 
     done();
   });
@@ -73,7 +74,7 @@ describe('factory', function() {
       nQueue.createClient(host, port);
     });
 
-    sinon.assert.notCalled(ClientSpy);
+    sinon.assert.notCalled(Client);
 
     done();
   });
@@ -84,7 +85,7 @@ describe('factory', function() {
 
     nQueue.createClient(host, port);
 
-    sinon.assert.calledWithExactly(ClientSpy, host, port, sinon.match.string, sinon.match.object);
+    sinon.assert.calledWithExactly(Client, host, port, sinon.match.string, sinon.match.object);
 
     done();
   });
@@ -97,7 +98,27 @@ describe('factory', function() {
       nQueue.createClient(host, port);
     });
 
-    sinon.assert.notCalled(ClientSpy);
+    sinon.assert.notCalled(Client);
+
+    done();
+  });
+
+  it('create new job', function(done) {
+    var job = nQueue.createJob();
+
+    sinon.assert.calledOnce(Job);
+    (job).should.be.instanceOf(Job);
+
+    done();
+  });
+
+  it('create new job from string', function(done) {
+    var jobString = 'job string';
+    var job = nQueue.createJob(jobString);
+
+    sinon.assert.calledOnce(Job);
+    sinon.assert.calledWithExactly(Job, jobString);
+    (job).should.be.instanceOf(Job);
 
     done();
   });
