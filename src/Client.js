@@ -29,7 +29,7 @@ function Client(host, port, queue, options) {
   self.keyspace = Client.getKeyspace(options.prefix, queue);
 
   // todo set redis database
-  self.store = redis.createClient(port, host);
+  self._store = redis.createClient(port, host);
 
   self.redisCommandsSHA = {
     plpush: Client.getCommandSHA('plpush'),
@@ -108,7 +108,7 @@ Client.prototype._write = function(job, encoding, cb) {
 
   if (!(job instanceof Job)) return cb(new Error('job must be instanceof Job'));
 
-  self.store.evalsha([self.redisCommandsSHA.plpush, 2, job.meta.status, job.meta.priority, job.toString()], function(err) {
+  self._store.evalsha([self.redisCommandsSHA.plpush, 2, job.meta.status, job.meta.priority, job.toString()], function(err) {
       if (err) return cb(err);
       cb(undefined);
   });
@@ -136,7 +136,7 @@ Client.prototype.read = function(source, destination) {
 Client.prototype._read = function(source, destination) {
   var self = this;
 
-  self.store.evalsha([self.redisCommandsSHA.prpoplpush, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
+  self._store.evalsha([self.redisCommandsSHA.prpoplpush, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
     if (err) self.emit('error', err);
     self._push(data);
   });

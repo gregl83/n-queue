@@ -84,7 +84,7 @@ describe('client', function() {
     var client = new Client(host, port, queue, options);
 
     var _write = sandbox.spy(client, '_write');
-    var evalsha = sandbox.spy(client.store, 'evalsha');
+    var evalsha = sandbox.spy(client._store, 'evalsha');
 
     var job = new Job();
 
@@ -112,7 +112,7 @@ describe('client', function() {
     var client = new Client(host, port, queue, options);
 
     var _write = sandbox.spy(client, '_write');
-    var evalsha = sandbox.spy(client.store, 'evalsha');
+    var evalsha = sandbox.spy(client._store, 'evalsha');
 
     var jobs = [new Job(), new Job()];
 
@@ -177,7 +177,7 @@ describe('client', function() {
     var jobString = job.toString();
 
     var _read = sandbox.spy(client, '_read');
-    var evalsha = sandbox.stub(client.store, 'evalsha').callsArgWith(1, null, jobString);
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, jobString);
     var _push = sandbox.spy(client, '_push');
 
     var onError = sinon.spy();
@@ -216,7 +216,7 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, options);
 
-    var evalsha = sandbox.stub(client.store, 'evalsha').callsArgWith(1, null, null);
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, null);
 
     var onError = sinon.spy();
     client.on('error', onError);
@@ -250,7 +250,7 @@ describe('client', function() {
     var client = new Client(host, port, queue, options);
 
     var error = new Error('read error');
-    var evalsha = sandbox.stub(client.store, 'evalsha').callsArgWith(1, error);
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
 
     var onError = sinon.spy();
     client.on('error', onError);
