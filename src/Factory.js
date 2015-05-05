@@ -30,7 +30,7 @@ module.exports.createClient = function(host, port, options) {
 /**
  * Creates a new nQueue Job
  *
- * @param {string} job
+ * @param {string} [job]
  * @returns {Job}
  */
 module.exports.createJob = function(job) {
