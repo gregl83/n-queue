@@ -143,7 +143,6 @@ describe('client', function() {
     var client = new Client(host, port, queue, options);
 
     var error = sinon.spy();
-
     client.on('error', error);
 
     var jobs = 'invalid';
@@ -157,6 +156,10 @@ describe('client', function() {
       done();
     });
   });
+
+
+  // todo test write error in async queue
+
 
   it('read job from queue', function(done) {
     var host = "127.0.0.1";
@@ -261,7 +264,7 @@ describe('client', function() {
     client.read(source, destination);
 
     sinon.assert.calledOnce(onError);
-    sinon.assert.calledWith(onError, error);
+    sinon.assert.calledWith(onError, sinon.match.instanceOf(Error));
 
     sinon.assert.notCalled(onReadable);
 
