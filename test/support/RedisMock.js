@@ -35,8 +35,9 @@ RedisClientMock.prototype.evalsha = function(args, cb) {
 RedisClientMock.prototype._plpush = function(args, cb) {
   var self = this;
 
-  var key = args[0];
-  var priority = args[1];
+  var keysCount = args[0];
+  var key = args[1];
+  var priority = args[2];
 
   if ('string' !== typeof key || 'string' !== typeof priority) return cb(new Error('ERR syntax error'));
 

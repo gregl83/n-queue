@@ -97,7 +97,7 @@ describe('client', function() {
       sinon.assert.calledWithExactly(_write, job, 'utf8', sinon.match.func);
 
       sinon.assert.calledOnce(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', job.meta.status, job.meta.priority, job.toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, job.meta.status, job.meta.priority, job.toString()], sinon.match.func);
 
       done();
     });
@@ -127,8 +127,8 @@ describe('client', function() {
       sinon.assert.calledWithExactly(_write, jobs[1], 'utf8', sinon.match.func);
 
       sinon.assert.calledTwice(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', jobs[0].meta.status, jobs[0].meta.priority, jobs[0].toString()], sinon.match.func);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', jobs[1].meta.status, jobs[1].meta.priority, jobs[1].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, jobs[0].meta.status, jobs[0].meta.priority, jobs[0].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, jobs[1].meta.status, jobs[1].meta.priority, jobs[1].toString()], sinon.match.func);
 
       done();
     });

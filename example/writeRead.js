@@ -18,6 +18,6 @@ client.on('end', function() {
 
 var job = nQueue.createJob();
 
-//client.write(job, function() {
-//  client.read();
-//});
+client.write(job, function(err) {
+  client.read();
+});

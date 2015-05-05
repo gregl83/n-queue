@@ -108,7 +108,7 @@ Client.prototype._write = function(job, encoding, cb) {
 
   if (!(job instanceof Job)) return cb(new Error('job must be instanceof Job'));
 
-  self.store.evalsha([self.redisCommandsSHA.plpush, job.meta.status, job.meta.priority, job.toString()], function(err) {
+  self.store.evalsha([self.redisCommandsSHA.plpush, 2, job.meta.status, job.meta.priority, job.toString()], function(err) {
       if (err) return cb(err);
       cb(undefined);
   });
