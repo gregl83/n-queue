@@ -135,7 +135,7 @@ describe('job', function() {
     var newData = 'invalid';
 
     should.throws(function() {
-      job.setDate(newData);
+      job.setData(newData);
     });
 
     done();

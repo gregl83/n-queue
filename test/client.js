@@ -18,21 +18,27 @@ var RedisMock = require('./support/RedisMock');
 sinon.spy(RedisMock, "createClient");
 mockery.registerMock('redis', RedisMock);
 
-
-var Client = require('../src/Client');
-
-sinon.stub(Client, 'getCommandSHA', function(command) {
+mockery.registerMock('n-redis-commands', function(command) {
   return '_' + command;
 });
 
+var Client = require('../src/Client');
+
+
+var sandbox;
 
 describe('client', function() {
+  beforeEach(function () {
+    sandbox = sinon.sandbox.create();
+  });
+
   after(function() {
     mockery.deregisterAll();
   });
 
   afterEach(function() {
     RedisMock.createClient.reset();
+    sandbox.restore();
   });
 
   it('new client redis server', function(done) {
@@ -77,8 +83,8 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, options);
 
-    var _write = sinon.spy(client, '_write');
-    var evalsha = sinon.spy(client.store, 'evalsha');
+    var _write = sandbox.spy(client, '_write');
+    var evalsha = sandbox.spy(client.store, 'evalsha');
 
     var job = new Job();
 
@@ -105,8 +111,8 @@ describe('client', function() {
 
     var client = new Client(host, port, queue, options);
 
-    var _write = sinon.spy(client, '_write');
-    var evalsha = sinon.spy(client.store, 'evalsha');
+    var _write = sandbox.spy(client, '_write');
+    var evalsha = sandbox.spy(client.store, 'evalsha');
 
     var jobs = [new Job(), new Job()];
 
@@ -167,9 +173,15 @@ describe('client', function() {
     job.setStatus(source);
     var jobString = job.toString();
 
-    var _read = sinon.spy(client, '_read');
-    var evalsha = sinon.stub(client.store, 'evalsha').callsArgWith(1, null, jobString);
-    var _push = sinon.spy(client, '_push');
+    var _read = sandbox.spy(client, '_read');
+    var evalsha = sandbox.stub(client.store, 'evalsha').callsArgWith(1, null, jobString);
+    var _push = sandbox.spy(client, '_push');
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    var onReadable = sinon.spy();
+    client.on('readable', onReadable);
 
     client.read(source, destination);
 
@@ -182,8 +194,79 @@ describe('client', function() {
     sinon.assert.calledOnce(_push);
     sinon.assert.calledWithExactly(_push, jobString);
 
+    sinon.assert.notCalled(onError);
+
+    sinon.assert.calledOnce(onReadable);
+    sinon.assert.calledWithExactly(onReadable, jobString);
+
     done();
   });
 
-  // todo readJobs tests
+  it('read from empty queue', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var queue = 'queue';
+    var options = {};
+
+    var source = 'queued';
+    var destination = 'processing';
+
+    var client = new Client(host, port, queue, options);
+
+    var evalsha = sandbox.stub(client.store, 'evalsha').callsArgWith(1, null, null);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    var onReadable = sinon.spy();
+    client.on('readable', onReadable);
+
+    var onEnd = sinon.spy();
+    client.on('end', onEnd);
+
+    client.read(source, destination);
+
+    sinon.assert.notCalled(onError);
+
+    sinon.assert.notCalled(onReadable);
+
+    sinon.assert.calledOnce(onEnd);
+
+    done();
+  });
+
+  it('read error', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var queue = 'queue';
+    var options = {};
+
+    var source = 'queued';
+    var destination = 'processing';
+
+    var client = new Client(host, port, queue, options);
+
+    var error = new Error('read error');
+    var evalsha = sandbox.stub(client.store, 'evalsha').callsArgWith(1, error);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    var onReadable = sinon.spy();
+    client.on('readable', onReadable);
+
+    var onEnd = sinon.spy();
+    client.on('end', onEnd);
+
+    client.read(source, destination);
+
+    sinon.assert.calledOnce(onError);
+    sinon.assert.calledWith(onError, error);
+
+    sinon.assert.notCalled(onReadable);
+
+    sinon.assert.calledOnce(onEnd);
+
+    done();
+  });
 });

@@ -137,7 +137,7 @@ Client.prototype._read = function(source, destination) {
   var self = this;
 
   self.store.evalsha([self.redisCommandsSHA.prpoplpush, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
-    // todo error handling
+    if (err) self.emit('error', err);
     self._push(data);
   });
 };
@@ -153,7 +153,7 @@ Client.prototype._read = function(source, destination) {
 Client.prototype._push = function(job) {
   var self = this;
 
-  if (null === job) return self.emit('end');
+  if (!job) return self.emit('end');
 
   self.emit('readable', job);
 };
@@ -164,9 +164,9 @@ Client.prototype._push = function(job) {
  *
  * @async
  */
-Client.prototype.getStatus = function() {
+//Client.prototype.getStatus = function() {
   // todo return status of queue data
-};
+//};
 
 
 module.exports = Client;
