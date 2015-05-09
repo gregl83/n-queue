@@ -162,10 +162,17 @@ Client.prototype._push = function(job) {
 /**
  * Get status of Queue
  *
+ * @param {array} sources
+ * @returns {object} status
  * @async
  */
-//Client.prototype.getStatus = function() {
-  // todo return status of queue data
+//Client.prototype.getStatus = function(sources) {
+  //var self = this;
+
+  //self._store.evalsha([self.redisCommandsSHA.pllen, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
+  //  if (err) self.emit('error', err);
+  //  self._push(data);
+  //});
 //};
 
 
