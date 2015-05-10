@@ -184,13 +184,8 @@ Client.prototype.getStatus = function(sources, cb) {
         error = err;
         return callback(err);
       }
-
       if ('undefined' === typeof status[source]) status[source] = {};
-
-      for (var i=0; i<data.length; i++) {
-        status[source][data[i]] = data[++i];
-      }
-
+      for (var i=0; i<data.length; i++) status[source][data[i]] = data[++i];
       callback();
     });
   }, 10);
