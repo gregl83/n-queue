@@ -142,9 +142,36 @@ describe('client', function() {
     });
   });
 
+  it('write job error', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
-  // todo test write error in async queue
+    var error = new Error('evalsha error');
 
+    var _write = sandbox.spy(client, '_write');
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    var job = new Job();
+
+    job.setStatus('queued');
+
+    client.write([job], function(err) {
+      should(err).not.be.undefined;
+
+      sinon.assert.calledOnce(_write);
+      sinon.assert.calledWithExactly(_write, job, 'utf8', sinon.match.func);
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, job.meta.status, job.meta.priority, job.toString()], sinon.match.func);
+
+      sinon.assert.calledOnce(onError);
+      sinon.assert.calledWithExactly(onError, sinon.match.instanceOf(Error));
+
+      done();
+    });
+  });
 
   it('read job from queue', function(done) {
     var source = 'queued';
@@ -281,8 +308,7 @@ describe('client', function() {
 
     var error = new Error('evalsha error');
 
-    var evalsha = sandbox.stub(client._store, 'evalsha');
-    evalsha.onFirstCall().callsArgWith(1, error);
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
 
     var onStatus = sinon.spy();
     client.on('status', onStatus);
@@ -299,7 +325,7 @@ describe('client', function() {
       sinon.assert.notCalled(onStatus);
 
       sinon.assert.calledOnce(onError);
-      sinon.assert.calledWithExactly(onError, error);
+      sinon.assert.calledWithExactly(onError, sinon.match.instanceOf(Error));
 
       done();
     });
