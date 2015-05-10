@@ -14,6 +14,11 @@ client.on('readable', function(job) {
   console.log(job);
 });
 
+client.on('status', function(status) {
+  console.log('Client#status');
+  console.log(status);
+});
+
 client.on('end', function() {
   console.log('Client#end');
 
@@ -32,14 +37,15 @@ job.setStatus('queued');
 
 client.write(job, function(err) {
   if (err) console.log('client.write error', err);
-
   console.log('job written');
 
-  client.read('queued', 'processing');
+  client.getStatus(['queued', 'processing'], function() {
+    client.read('queued', 'processing');
 
-  console.log('read called');
+    console.log('read called');
 
-  client.read('queued', 'processing');
+    client.read('queued', 'processing');
 
-  console.log('read called');
+    console.log('read called');
+  });
 });

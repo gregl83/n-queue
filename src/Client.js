@@ -33,6 +33,7 @@ function Client(host, port, queue, options) {
 
   self.redisCommandsSHA = {
     plpush: Client.getCommandSHA('plpush'),
+    pllen: Client.getCommandSHA('pllen'),
     prpoplpush: Client.getCommandSHA('prpoplpush')
   };
 }
@@ -69,6 +70,7 @@ Client.getCommandSHA = function(command) {
  *
  * @param {job|{job}[]} jobs
  * @param {function} [cb] optional
+ * @fries Client#error
  * @async
  */
 Client.prototype.write = function(jobs, cb) {
@@ -131,12 +133,13 @@ Client.prototype.read = function(source, destination) {
  *
  * @param {string} source
  * @param {string} destination
+ * @fires Client#error
  * @private
  */
 Client.prototype._read = function(source, destination) {
   var self = this;
 
-  self._store.evalsha([self.redisCommandsSHA.prpoplpush, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
+  self._store.evalsha([self.redisCommandsSHA.prpoplpush, 6, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
     if (err) self.emit('error', err);
     self._push(data);
   });
@@ -162,18 +165,45 @@ Client.prototype._push = function(job) {
 /**
  * Get status of Queue
  *
- * @param {array} sources
- * @returns {object} status
+ * @param {string|array} sources
+ * @param {function} [cb]
+ * @fires Client#status
+ * @fires Client#error
  * @async
  */
-//Client.prototype.getStatus = function(sources) {
-  //var self = this;
+Client.prototype.getStatus = function(sources, cb) {
+  var self = this;
+  var error = undefined;
+  var status = {};
 
-  //self._store.evalsha([self.redisCommandsSHA.pllen, 2, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
-  //  if (err) self.emit('error', err);
-  //  self._push(data);
-  //});
-//};
+  if (!Array.isArray(sources)) sources = [sources];
+
+  var queue = async.queue(function (source, callback) {
+    self._store.evalsha([self.redisCommandsSHA.pllen, 5, source, 'critical', 'high', 'medium', 'low'], function(err, data) {
+      if (err) {
+        error = err;
+        return callback(err);
+      }
+
+      if ('undefined' === typeof status[source]) status[source] = {};
+
+      for (var i=0; i<data.length; i++) {
+        status[source][data[i]] = data[++i];
+      }
+
+      callback();
+    });
+  }, 10);
+
+  queue.drain = function() {
+    if (error) self.emit('error', error);
+    else self.emit('status', status);
+
+    if ('function' === typeof cb) cb(error, status);
+  };
+
+  queue.push(sources);
+};
 
 
 module.exports = Client;

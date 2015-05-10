@@ -42,7 +42,7 @@
     "async": "0.9.x",
     "redis": "0.12.x",
     "node-uuid": "1.4.x",
-    "n-redis-commands": "0.1.x"
+    "n-redis-commands": "0.2.x"
   },
   "license": "MIT"
 }

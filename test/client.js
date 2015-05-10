@@ -192,7 +192,7 @@ describe('client', function() {
     sinon.assert.calledWithExactly(_read, source, destination);
 
     sinon.assert.calledOnce(evalsha);
-    sinon.assert.calledWithExactly(evalsha, ['_prpoplpush', 2, source, destination, 'critical', 'high', 'medium', 'low'], sinon.match.func);
+    sinon.assert.calledWithExactly(evalsha, ['_prpoplpush', 6, source, destination, 'critical', 'high', 'medium', 'low'], sinon.match.func);
 
     sinon.assert.calledOnce(_push);
     sinon.assert.calledWithExactly(_push, jobString);
