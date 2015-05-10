@@ -76,12 +76,7 @@ describe('client', function() {
   });
 
   it('write job to queue', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var _write = sandbox.spy(client, '_write');
     var evalsha = sandbox.spy(client._store, 'evalsha');
@@ -104,12 +99,7 @@ describe('client', function() {
   });
 
   it('write job array to queue', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var _write = sandbox.spy(client, '_write');
     var evalsha = sandbox.spy(client._store, 'evalsha');
@@ -135,12 +125,7 @@ describe('client', function() {
   });
 
   it('write invalid job to queue', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var error = sinon.spy();
     client.on('error', error);
@@ -162,15 +147,10 @@ describe('client', function() {
 
 
   it('read job from queue', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
     var source = 'queued';
     var destination = 'processing';
 
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var job = new Job();
     job.setStatus(source);
@@ -206,15 +186,10 @@ describe('client', function() {
   });
 
   it('read from empty queue', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
     var source = 'queued';
     var destination = 'processing';
 
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, null);
 
@@ -239,15 +214,10 @@ describe('client', function() {
   });
 
   it('read error', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
     var source = 'queued';
     var destination = 'processing';
 
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var error = new Error('read error');
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
@@ -274,11 +244,6 @@ describe('client', function() {
   });
 
   it('get queue status', function(done) {
-    var host = "127.0.0.1";
-    var port = 6379;
-    var queue = 'queue';
-    var options = {};
-
     var sources = ['queued', 'processing', 'done'];
     var stats = {
       'queued': ['critical', 100, 'high', 75, 'medium', 50, 'low', 25],
@@ -286,7 +251,7 @@ describe('client', function() {
       'done': ['critical', 1000, 'high', 750, 'medium', 500, 'low', 250]
     };
 
-    var client = new Client(host, port, queue, options);
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var evalsha = sandbox.stub(client._store, 'evalsha');
     evalsha.onFirstCall().callsArgWith(1, undefined, stats['queued']);
