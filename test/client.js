@@ -276,6 +276,35 @@ describe('client', function() {
     });
   });
 
+  it('get status error', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var error = new Error('evalsha error');
+
+    var evalsha = sandbox.stub(client._store, 'evalsha');
+    evalsha.onFirstCall().callsArgWith(1, error);
+
+    var onStatus = sinon.spy();
+    client.on('status', onStatus);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.getStatus('queued', function(err, status) {
+      should(err).not.be.undefined;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+
+      sinon.assert.notCalled(onStatus);
+
+      sinon.assert.calledOnce(onError);
+      sinon.assert.calledWithExactly(onError, error);
+
+      done();
+    });
+  });
+
   it('get statuses', function(done) {
     var sources = ['queued', 'processing', 'done'];
 
