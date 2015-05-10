@@ -272,4 +272,53 @@ describe('client', function() {
 
     done();
   });
+
+  it('get queue status', function(done) {
+    var host = "127.0.0.1";
+    var port = 6379;
+    var queue = 'queue';
+    var options = {};
+
+    var sources = ['queued', 'processing', 'done'];
+    var stats = {
+      'queued': ['critical', 100, 'high', 75, 'medium', 50, 'low', 25],
+      'processing': ['critical', 10, 'high', 7, 'medium', 5, 'low', 2],
+      'done': ['critical', 1000, 'high', 750, 'medium', 500, 'low', 250]
+    };
+
+    var client = new Client(host, port, queue, options);
+
+    var evalsha = sandbox.stub(client._store, 'evalsha');
+    evalsha.onFirstCall().callsArgWith(1, undefined, stats['queued']);
+    evalsha.onSecondCall().callsArgWith(1, undefined, stats['processing']);
+    evalsha.onThirdCall().callsArgWith(1, undefined, stats['done']);
+
+    var onStatus = sinon.spy();
+    client.on('status', onStatus);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.getStatus(sources, function(err, status) {
+      should(err).be.undefined;
+
+      sinon.assert.calledThrice(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'processing', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'done', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+
+      sinon.assert.calledOnce(onStatus);
+      sinon.assert.calledWithExactly(onStatus, status);
+
+      sinon.assert.notCalled(onError);
+
+      should.deepEqual(status, {
+        queued: {critical: stats['queued'][1], high: stats['queued'][3], medium: stats['queued'][5], low: stats['queued'][7]},
+        processing: {critical: stats['processing'][1], high: stats['processing'][3], medium: stats['processing'][5], low: stats['processing'][7]},
+        done: {critical: stats['done'][1], high: stats['done'][3], medium: stats['done'][5], low: stats['done'][7]}
+      });
+
+      done();
+    });
+  });
 });

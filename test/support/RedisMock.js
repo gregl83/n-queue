@@ -56,6 +56,28 @@ RedisClientMock.prototype._plpush = function(args, cb) {
 };
 
 
+RedisClientMock.prototype._pllen = function(args, cb) {
+  var self = this;
+
+  var keysCount = args[0];
+  var key = args[1];
+  var priorities = args.slice(2);
+
+  if ('string' !== typeof key || 0 >= priorities.length) return cb(new Error('ERR syntax error'));
+
+  var response = [];
+
+  var keyspace = '';
+  priorities.forEach(function(val) {
+    response.push(val);
+    keyspace = key + ':' + val;
+    response.push(self.lists[keyspace].length || 0);
+  });
+
+  cb(undefined, response);
+};
+
+
 RedisClientMock.prototype._prpoplpush = function(args, cb) {
   var self = this;
 
