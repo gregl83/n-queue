@@ -270,67 +270,6 @@ describe('client', function() {
     done();
   });
 
-  it('get status', function(done) {
-    var stats = {'queued': ['critical', 100, 'high', 75, 'medium', 50, 'low', 25]};
-
-    var client = new Client("127.0.0.1", 6379, 'queue', {});
-
-    var evalsha = sandbox.stub(client._store, 'evalsha');
-    evalsha.onFirstCall().callsArgWith(1, undefined, stats['queued']);
-
-    var onStatus = sinon.spy();
-    client.on('status', onStatus);
-
-    var onError = sinon.spy();
-    client.on('error', onError);
-
-    client.getStatus('queued', function(err, status) {
-      should(err).be.undefined;
-
-      sinon.assert.calledOnce(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
-
-      sinon.assert.calledOnce(onStatus);
-      sinon.assert.calledWithExactly(onStatus, status);
-
-      sinon.assert.notCalled(onError);
-
-      should.deepEqual(status, {
-        queued: {critical: stats['queued'][1], high: stats['queued'][3], medium: stats['queued'][5], low: stats['queued'][7]}
-      });
-
-      done();
-    });
-  });
-
-  it('get status error', function(done) {
-    var client = new Client("127.0.0.1", 6379, 'queue', {});
-
-    var error = new Error('evalsha error');
-
-    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
-
-    var onStatus = sinon.spy();
-    client.on('status', onStatus);
-
-    var onError = sinon.spy();
-    client.on('error', onError);
-
-    client.getStatus('queued', function(err, status) {
-      should(err).not.be.undefined;
-
-      sinon.assert.calledOnce(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
-
-      sinon.assert.notCalled(onStatus);
-
-      sinon.assert.calledOnce(onError);
-      sinon.assert.calledWithExactly(onError, sinon.match.instanceOf(Error));
-
-      done();
-    });
-  });
-
   it('pipe job', function(done) {
     var source = 'processing';
     var destination = 'done';
@@ -403,6 +342,67 @@ describe('client', function() {
       sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
 
       sinon.assert.calledOnce(onError);
+
+      done();
+    });
+  });
+
+  it('get status', function(done) {
+    var stats = {'queued': ['critical', 100, 'high', 75, 'medium', 50, 'low', 25]};
+
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var evalsha = sandbox.stub(client._store, 'evalsha');
+    evalsha.onFirstCall().callsArgWith(1, undefined, stats['queued']);
+
+    var onStatus = sinon.spy();
+    client.on('status', onStatus);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.getStatus('queued', function(err, status) {
+      should(err).be.undefined;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+
+      sinon.assert.calledOnce(onStatus);
+      sinon.assert.calledWithExactly(onStatus, status);
+
+      sinon.assert.notCalled(onError);
+
+      should.deepEqual(status, {
+        queued: {critical: stats['queued'][1], high: stats['queued'][3], medium: stats['queued'][5], low: stats['queued'][7]}
+      });
+
+      done();
+    });
+  });
+
+  it('get status error', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var error = new Error('evalsha error');
+
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
+
+    var onStatus = sinon.spy();
+    client.on('status', onStatus);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.getStatus('queued', function(err, status) {
+      should(err).not.be.undefined;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+
+      sinon.assert.notCalled(onStatus);
+
+      sinon.assert.calledOnce(onError);
+      sinon.assert.calledWithExactly(onError, sinon.match.instanceOf(Error));
 
       done();
     });
