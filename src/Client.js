@@ -34,6 +34,7 @@ function Client(host, port, queue, options) {
   self.redisCommandsSHA = {
     plpush: Client.getCommandSHA('plpush'),
     pllen: Client.getCommandSHA('pllen'),
+    plremlpush: Client.getCommandSHA('plremlpush'),
     prpoplpush: Client.getCommandSHA('prpoplpush')
   };
 }
@@ -159,6 +160,27 @@ Client.prototype._push = function(job) {
   if (!job) return self.emit('end');
 
   self.emit('readable', job);
+};
+
+
+/**
+ * Pipe Job from source to destination
+ *
+ * Caution: This is NOT the same as Readable.pipe from NodeJS Streams
+ *
+ * @param {string} source
+ * @param {string} destination
+ * @param {Job} job
+ * @param {function} [cb]
+ * @fires Client#error
+ */
+Client.prototype.pipe = function(source, destination, job, cb) {
+  var self = this;
+
+  self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, 'critical', 0, job], function(err, data) {
+    if (err) self.emit('error', err);
+    if ('function' === typeof cb) cb(err, data);
+  });
 };
 
 

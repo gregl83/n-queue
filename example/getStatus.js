@@ -39,11 +39,9 @@ client.write(job, function(err) {
   if (err) console.log('client.write error', err);
   console.log('job written');
 
-  client.read('queued', 'processing');
+  client.getStatus(['queued', 'processing', 'done'], function(err) {
+    if (err) console.log('client.getStatus error', err);
 
-  console.log('read called');
-
-  client.read('queued', 'processing');
-
-  console.log('read called');
+    client.emit('end');
+  });
 });
