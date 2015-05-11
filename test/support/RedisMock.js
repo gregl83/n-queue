@@ -168,6 +168,11 @@ RedisClientMock.prototype.zadd = function(args, cb) {
 };
 
 
+RedisClientMock.prototype.quit = function() {
+  // todo something
+};
+
+
 module.exports = {
   createClient: function() {
     return new RedisClientMock();
