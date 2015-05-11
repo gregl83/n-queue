@@ -104,7 +104,6 @@ Client.prototype.write = function(jobs, cb) {
  * @param {job} job
  * @param {string} encoding
  * @param {function} cb
- * @throws {error}
  * @private
  */
 Client.prototype._write = function(job, encoding, cb) {
@@ -173,13 +172,15 @@ Client.prototype._push = function(job) {
  * @param {string} destination
  * @param {Job} job
  * @param {function} [cb]
- * @throws {error}
  * @fires Client#error
  */
 Client.prototype.pipe = function(source, destination, job, cb) {
   var self = this;
 
-  if (!(job instanceof Job)) return cb(new Error('job must be instanceof Job'));
+  if (!(job instanceof Job)) {
+    if ('function' === typeof cb) return cb(new Error('job must be instanceof Job'));
+    else return;
+  }
 
   self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, job.meta.priority, 0, job], function(err, data) {
     if (err) self.emit('error', err);

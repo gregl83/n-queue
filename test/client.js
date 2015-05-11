@@ -357,4 +357,25 @@ describe('client', function() {
       done();
     });
   });
+
+  it('close', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var quit = sandbox.stub(client._store, 'quit');
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    var onEnd = sinon.spy();
+    client.on('end', onEnd);
+
+    client.close();
+
+    sinon.assert.notCalled(onError);
+    sinon.assert.calledOnce(onEnd);
+
+    sinon.assert.calledOnce(quit);
+
+    done();
+  });
 });
