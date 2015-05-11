@@ -331,6 +331,83 @@ describe('client', function() {
     });
   });
 
+  it('pipe job', function(done) {
+    var source = 'processing';
+    var destination = 'done';
+
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var job = new Job();
+
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, 1);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.pipe(source, destination, job, function(err, data) {
+      should(err).be.null;
+      (data).should.be.zero;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
+
+      sinon.assert.notCalled(onError);
+
+      done();
+    });
+  });
+
+  it('pipe invalid job', function(done) {
+    var source = 'processing';
+    var destination = 'done';
+
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var job = 'invalid';
+
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, 1);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.pipe(source, destination, job, function(err, data) {
+      (err).should.be.error;
+      should(data).be.undefined;
+
+      sinon.assert.notCalled(onError);
+
+      done();
+    });
+  });
+
+  it('pipe job error', function(done) {
+    var source = 'processing';
+    var destination = 'done';
+
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var job = new Job();
+
+    var error = new Error('pipe error');
+
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error, 0);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.pipe(source, destination, job, function(err, data) {
+      (err).should.be.eql(error);
+      (data).should.be.zero;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
+
+      sinon.assert.calledOnce(onError);
+
+      done();
+    });
+  });
+
   it('get statuses', function(done) {
     var sources = ['queued', 'processing', 'done'];
 

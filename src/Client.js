@@ -171,15 +171,18 @@ Client.prototype._push = function(job) {
  * @param {string} source
  * @param {string} destination
  * @param {Job} job
- * @param {function} [cb]
+ * @param {function} [cb] optional
  * @fires Client#error
  */
 Client.prototype.pipe = function(source, destination, job, cb) {
   var self = this;
 
   if (!(job instanceof Job)) {
-    if ('function' === typeof cb) return cb(new Error('job must be instanceof Job'));
-    else return;
+    var error = new Error('job must be instanceof Job');
+
+    if ('function' === typeof cb) cb(error);
+
+    return self.emit('error', error);
   }
 
   self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, job.meta.priority, 0, job], function(err, data) {
