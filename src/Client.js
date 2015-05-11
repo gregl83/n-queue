@@ -104,6 +104,7 @@ Client.prototype.write = function(jobs, cb) {
  * @param {job} job
  * @param {string} encoding
  * @param {function} cb
+ * @throws {error}
  * @private
  */
 Client.prototype._write = function(job, encoding, cb) {
@@ -157,7 +158,7 @@ Client.prototype._read = function(source, destination) {
 Client.prototype._push = function(job) {
   var self = this;
 
-  if (!job) return self.emit('end');
+  if (!job) return self.close();
 
   self.emit('readable', job);
 };
@@ -172,12 +173,15 @@ Client.prototype._push = function(job) {
  * @param {string} destination
  * @param {Job} job
  * @param {function} [cb]
+ * @throws {error}
  * @fires Client#error
  */
 Client.prototype.pipe = function(source, destination, job, cb) {
   var self = this;
 
-  self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, 'critical', 0, job], function(err, data) {
+  if (!(job instanceof Job)) return cb(new Error('job must be instanceof Job'));
+
+  self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, job.meta.priority, 0, job], function(err, data) {
     if (err) self.emit('error', err);
     if ('function' === typeof cb) cb(err, data);
   });
@@ -220,6 +224,20 @@ Client.prototype.getStatus = function(sources, cb) {
   };
 
   queue.push(sources);
+};
+
+
+/**
+ * Close client
+ *
+ * @fires Client#end
+ */
+Client.prototype.close = function() {
+  var self = this;
+
+  self.emit('end');
+
+  self._store.quit();
 };
 
 

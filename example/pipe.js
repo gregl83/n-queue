@@ -23,10 +23,9 @@ client.on('end', function() {
   console.log('Client#end');
 
   // cleanup store
-  client._store.del('queued:medium', 'processing:medium');
+  client._store.del('queued:medium', 'done:medium');
 
   console.log('closing client');
-  client._store.quit();
 });
 
 
@@ -39,9 +38,7 @@ client.write(job, function(err) {
   if (err) console.log('client.write error', err);
   console.log('job written');
 
-  client.getStatus(['queued', 'processing', 'done'], function(err) {
-    if (err) console.log('client.getStatus error', err);
+  client.pipe('queued', 'done', job);
 
-    client.close();
-  });
+  client.close();
 });
