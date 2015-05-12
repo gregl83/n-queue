@@ -75,56 +75,69 @@ describe('client', function() {
     done();
   });
 
-  it('write job to queue', function(done) {
+  it('write data to queue', function(done) {
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
-    var _write = sandbox.spy(client, '_write');
-    var evalsha = sandbox.spy(client._store, 'evalsha');
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, undefined);
+
+    var job = new Job();
+    job.setStatus('queued');
+
+    client.write('queued', job.meta.priority, job, 'utf8', function(err) {
+      should(err).be.undefined;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, 'queued', job.meta.priority, job.toString()], sinon.match.func);
+
+      done();
+    });
+  });
+
+  it('enqueue job', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var write = sandbox.spy(client, 'write');
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, undefined);
 
     var job = new Job();
 
-    job.setStatus('queued');
-
-    client.write(job, function(err) {
+    client.enqueueJobs(job, function(err) {
       should(err).be.undefined;
 
-      sinon.assert.calledOnce(_write);
-      sinon.assert.calledWithExactly(_write, job, 'utf8', sinon.match.func);
+      sinon.assert.calledOnce(write);
+      sinon.assert.calledWithExactly(write, 'queued', 'medium', job, 'utf8', sinon.match.func);
 
       sinon.assert.calledOnce(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, job.meta.status, job.meta.priority, job.toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, 'queued', job.meta.priority, job.toString()], sinon.match.func);
 
       done();
     });
   });
 
-  it('write job array to queue', function(done) {
+  it('enqueue job array', function(done) {
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
-    var _write = sandbox.spy(client, '_write');
-    var evalsha = sandbox.spy(client._store, 'evalsha');
+    var write = sandbox.spy(client, 'write');
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, undefined);
 
     var jobs = [new Job(), new Job()];
 
-    jobs[0].setStatus('scheduled');
-    jobs[1].setStatus('queued');
-
-    client.write(jobs, function(err) {
+    client.enqueueJobs(jobs, function(err) {
       should(err).be.undefined;
 
-      sinon.assert.calledTwice(_write);
-      sinon.assert.calledWithExactly(_write, jobs[0], 'utf8', sinon.match.func);
-      sinon.assert.calledWithExactly(_write, jobs[1], 'utf8', sinon.match.func);
+      sinon.assert.calledTwice(write);
+      sinon.assert.calledWithExactly(write, 'queued', jobs[0].meta.priority, jobs[0], 'utf8', sinon.match.func);
+      sinon.assert.calledWithExactly(write, 'queued', jobs[1].meta.priority, jobs[1], 'utf8', sinon.match.func);
 
       sinon.assert.calledTwice(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, jobs[0].meta.status, jobs[0].meta.priority, jobs[0].toString()], sinon.match.func);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, jobs[1].meta.status, jobs[1].meta.priority, jobs[1].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, 'queued', jobs[0].meta.priority, jobs[0].toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, 'queued', jobs[1].meta.priority, jobs[1].toString()], sinon.match.func);
 
       done();
     });
   });
 
-  it('write invalid job to queue', function(done) {
+  it('enqueue invalid job', function(done) {
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var error = sinon.spy();
@@ -132,7 +145,7 @@ describe('client', function() {
 
     var jobs = 'invalid';
 
-    client.write(jobs, function(err) {
+    client.enqueueJobs(jobs, function(err) {
       should(err).not.be.undefined;
 
       sinon.assert.calledOnce(error);
@@ -142,12 +155,12 @@ describe('client', function() {
     });
   });
 
-  it('write job error', function(done) {
+  it('enqueue job evalsha error', function(done) {
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
     var error = new Error('evalsha error');
 
-    var _write = sandbox.spy(client, '_write');
+    var write = sandbox.spy(client, 'write');
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
 
     var onError = sinon.spy();
@@ -155,16 +168,14 @@ describe('client', function() {
 
     var job = new Job();
 
-    job.setStatus('queued');
-
-    client.write([job], function(err) {
+    client.enqueueJobs(job, function(err) {
       should(err).not.be.undefined;
 
-      sinon.assert.calledOnce(_write);
-      sinon.assert.calledWithExactly(_write, job, 'utf8', sinon.match.func);
+      sinon.assert.calledOnce(write);
+      sinon.assert.calledWithExactly(write, 'queued', job.meta.priority, job, 'utf8', sinon.match.func);
 
       sinon.assert.calledOnce(evalsha);
-      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, job.meta.status, job.meta.priority, job.toString()], sinon.match.func);
+      sinon.assert.calledWithExactly(evalsha, ['_plpush', 2, 'queued', job.meta.priority, job.toString()], sinon.match.func);
 
       sinon.assert.calledOnce(onError);
       sinon.assert.calledWithExactly(onError, sinon.match.instanceOf(Error));
@@ -173,7 +184,24 @@ describe('client', function() {
     });
   });
 
-  it('read job from queue', function(done) {
+  it('read data from queue', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, undefined, 'data');
+
+    client.read('queued', 'processing', function(err, res) {
+      should(err).be.undefined;
+      (res).should.be.eql('data');
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_prpoplpush', 6, 'queued', 'processing', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+
+      done();
+    });
+  });
+
+
+  it('dequeue job', function(done) {
     var source = 'queued';
     var destination = 'processing';
 
@@ -181,38 +209,37 @@ describe('client', function() {
 
     var job = new Job();
     job.setStatus(source);
-    var jobString = job.toString();
 
-    var _read = sandbox.spy(client, '_read');
-    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, jobString);
+    var read = sandbox.spy(client, 'read');
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, job.toString());
     var _push = sandbox.spy(client, '_push');
+
+    var onData = sinon.spy();
+    client.on('data', onData);
 
     var onError = sinon.spy();
     client.on('error', onError);
 
-    var onReadable = sinon.spy();
-    client.on('readable', onReadable);
+    client.dequeueJob(source, destination);
 
-    client.read(source, destination);
-
-    sinon.assert.calledOnce(_read);
-    sinon.assert.calledWithExactly(_read, source, destination);
+    sinon.assert.calledOnce(read);
+    sinon.assert.calledWithExactly(read, source, destination, sinon.match.func);
 
     sinon.assert.calledOnce(evalsha);
     sinon.assert.calledWithExactly(evalsha, ['_prpoplpush', 6, source, destination, 'critical', 'high', 'medium', 'low'], sinon.match.func);
 
     sinon.assert.calledOnce(_push);
-    sinon.assert.calledWithExactly(_push, jobString);
+    sinon.assert.calledWithExactly(_push, sinon.match(JSON.parse(job)));
+
+    sinon.assert.calledOnce(onData);
+    sinon.assert.calledWithExactly(onData, sinon.match(JSON.parse(job)));
 
     sinon.assert.notCalled(onError);
-
-    sinon.assert.calledOnce(onReadable);
-    sinon.assert.calledWithExactly(onReadable, jobString);
 
     done();
   });
 
-  it('read from empty queue', function(done) {
+  it('dequeue empty queue', function(done) {
     var source = 'queued';
     var destination = 'processing';
 
@@ -220,72 +247,72 @@ describe('client', function() {
 
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, null);
 
+    var onData = sinon.spy();
+    client.on('data', onData);
+
     var onError = sinon.spy();
     client.on('error', onError);
-
-    var onReadable = sinon.spy();
-    client.on('readable', onReadable);
 
     var onEnd = sinon.spy();
     client.on('end', onEnd);
 
-    client.read(source, destination);
+    client.dequeueJob(source, destination);
+
+    sinon.assert.notCalled(onData);
 
     sinon.assert.notCalled(onError);
-
-    sinon.assert.notCalled(onReadable);
 
     sinon.assert.calledOnce(onEnd);
 
     done();
   });
 
-  it('read error', function(done) {
+  it('dequeue evalsha error', function(done) {
     var source = 'queued';
     var destination = 'processing';
 
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
-    var error = new Error('read error');
+    var error = new Error('evalsha error');
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error);
+
+    var onData = sinon.spy();
+    client.on('data', onData);
 
     var onError = sinon.spy();
     client.on('error', onError);
 
-    var onReadable = sinon.spy();
-    client.on('readable', onReadable);
-
     var onEnd = sinon.spy();
     client.on('end', onEnd);
 
-    client.read(source, destination);
+    client.dequeueJob(source, destination);
+
+    sinon.assert.notCalled(onData);
 
     sinon.assert.calledOnce(onError);
     sinon.assert.calledWith(onError, sinon.match.instanceOf(Error));
-
-    sinon.assert.notCalled(onReadable);
 
     sinon.assert.calledOnce(onEnd);
 
     done();
   });
 
-  it('pipe job', function(done) {
+  it('pipe data in queue', function(done) {
     var source = 'processing';
     var destination = 'done';
 
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
-    var job = new Job();
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, undefined, 1);
 
-    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, 1);
+    var job = new Job();
 
     var onError = sinon.spy();
     client.on('error', onError);
 
-    client.pipe(source, destination, job, function(err, data) {
-      should(err).be.null;
-      (data).should.be.zero;
+    client.pipe(source, destination, job.meta.priority, job, function(err, res) {
+      should(err).be.undefined;
+      (res).should.be.zero;
 
       sinon.assert.calledOnce(evalsha);
       sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
@@ -296,22 +323,29 @@ describe('client', function() {
     });
   });
 
-  it('pipe invalid job', function(done) {
+  it('close job', function(done) {
     var source = 'processing';
     var destination = 'done';
 
     var client = new Client("127.0.0.1", 6379, 'queue', {});
 
-    var job = 'invalid';
+    var job = new Job();
 
+    var pipe = sandbox.spy(client, 'pipe');
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, 1);
 
     var onError = sinon.spy();
     client.on('error', onError);
 
-    client.pipe(source, destination, job, function(err, data) {
-      (err).should.be.error;
-      should(data).be.undefined;
+    client.closeJob(job, function(err, data) {
+      should(err).be.null;
+      (data).should.be.one;
+
+      sinon.assert.calledOnce(pipe);
+      sinon.assert.calledWithExactly(pipe, source, destination, job.meta.priority, job, sinon.match.func);
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
 
       sinon.assert.notCalled(onError);
 
@@ -319,7 +353,32 @@ describe('client', function() {
     });
   });
 
-  it('pipe job error', function(done) {
+  it('close invalid job', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var job = 'invalid';
+
+    var pipe = sandbox.spy(client, 'pipe');
+    var evalsha = sandbox.stub(client._store, 'evalsha');
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.closeJob(job, function(err, data) {
+      (err).should.be.error;
+      should(data).be.undefined;
+
+      sinon.assert.notCalled(pipe);
+
+      sinon.assert.notCalled(evalsha);
+
+      sinon.assert.notCalled(onError);
+
+      done();
+    });
+  });
+
+  it('close job evalsha error', function(done) {
     var source = 'processing';
     var destination = 'done';
 
@@ -329,19 +388,44 @@ describe('client', function() {
 
     var error = new Error('pipe error');
 
+    var pipe = sandbox.spy(client, 'pipe');
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, error, 0);
 
     var onError = sinon.spy();
     client.on('error', onError);
 
-    client.pipe(source, destination, job, function(err, data) {
+    client.closeJob(job, function(err, data) {
       (err).should.be.eql(error);
       (data).should.be.zero;
+
+      sinon.assert.calledOnce(pipe);
+      sinon.assert.calledWithExactly(pipe, source, destination, job.meta.priority, job, sinon.match.func);
 
       sinon.assert.calledOnce(evalsha);
       sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
 
       sinon.assert.calledOnce(onError);
+
+      done();
+    });
+  });
+
+  it('get size of queue', function(done) {
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, undefined, 1);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.size('queued', function(err, res) {
+      should(err).be.undefined;
+      (res).should.be.one;
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_pllen', 5, 'queued', 'critical', 'high', 'medium', 'low'], sinon.match.func);
+
+      sinon.assert.notCalled(onError);
 
       done();
     });

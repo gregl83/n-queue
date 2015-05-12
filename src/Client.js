@@ -67,21 +67,117 @@ Client.getCommandSHA = function(command) {
 
 
 /**
- * Write Job(s) to Data Store (head of queue)
+ * Write Data to head of priority list
+ *
+ * @param {string} key
+ * @param {string} priority
+ * @param {*} data
+ * @param {string} encoding
+ * @param {function} cb
+ * @async
+ */
+Client.prototype.write = function(key, priority, data, encoding, cb) {
+  var self = this;
+
+  self._store.evalsha([self.redisCommandsSHA.plpush, 2, key, priority, data.toString(encoding)], function(err) {
+    cb(err);
+  });
+};
+
+
+/**
+ * Read Data from tail of priority list (highest to lowest priority)
+ *
+ * @param {string} source
+ * @param {string} destination
+ * @param {function} cb
+ * @async
+ */
+Client.prototype.read = function(source, destination, cb) {
+  var self = this;
+
+  self._store.evalsha([self.redisCommandsSHA.prpoplpush, 6, source, destination, 'critical', 'high', 'medium', 'low'], function(err, res) {
+    cb(err, res);
+  });
+};
+
+
+/**
+ * Push data to EventEmitter (readable)
+ *
+ * @param {*} data
+ * @fires Client#data
+ * @private
+ */
+Client.prototype._push = function(data) {
+  var self = this;
+
+  if (!data) return self.close();
+
+  self.emit('data', data);
+};
+
+
+/**
+ * Pipe Job from source to destination
+ *
+ * Caution: This is NOT the same as Readable.pipe from NodeJS Streams
+ *
+ * @param {string} source
+ * @param {string} destination
+ * @param {string} priority
+ * @param {*} data
+ * @param {function} cb
+ * @async
+ */
+Client.prototype.pipe = function(source, destination, priority, data, cb) {
+  var self = this;
+
+  self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, priority, 0, data], function(err, res) {
+    cb(err, res);
+  });
+};
+
+
+/**
+ * Get size of queue (from data store)
+ *
+ * @param {string} source
+ * @param {function} cb
+ * @async
+ */
+Client.prototype.size = function(source, cb) {
+  var self = this;
+
+  self._store.evalsha([self.redisCommandsSHA.pllen, 5, source, 'critical', 'high', 'medium', 'low'], function(err, res) {
+    cb(err, res);
+  });
+};
+
+
+/**
+ * Enqueue Job (to data store)
  *
  * @param {job|{job}[]} jobs
  * @param {function} [cb] optional
- * @fries Client#error
+ * @fires Client#error
  * @async
  */
-Client.prototype.write = function(jobs, cb) {
+Client.prototype.enqueueJobs = function(jobs, cb) {
   var self = this;
-  var error = undefined;
+  var error;
 
   if (!Array.isArray(jobs)) jobs = [jobs];
 
   var queue = async.queue(function (job, callback) {
-    self._write(job, 'utf8', function(err) {
+    if (!(job instanceof Job)) {
+      error = new Error('job must be instanceof Job');
+      return callback(error);
+    }
+
+    job.setStatus('queued');
+
+    self.write('queued', job.meta.priority, job, 'utf8', function(err) {
       if (!err) return callback();
 
       error = err;
@@ -99,82 +195,31 @@ Client.prototype.write = function(jobs, cb) {
 
 
 /**
- * Write Job to Data Store
+ * Dequeue Job (from data store)
+ *
+ * @fires Client#error
+ * @async
+ */
+Client.prototype.dequeueJob = function() {
+  var self = this;
+
+  self.read('queued', 'processing', function(err, res) {
+    if (err) self.emit('error', err);
+
+    if (!res) self._push(res);
+    else self._push(new Job(res));
+  });
+};
+
+
+/**
+ * Close Job (in data store)
  *
  * @param {job} job
- * @param {string} encoding
- * @param {function} cb
- * @private
- */
-Client.prototype._write = function(job, encoding, cb) {
-  var self = this;
-
-  if (!(job instanceof Job)) return cb(new Error('job must be instanceof Job'));
-
-  self._store.evalsha([self.redisCommandsSHA.plpush, 2, job.meta.status, job.meta.priority, job.toString()], function(err) {
-      if (err) return cb(err);
-      cb(undefined);
-  });
-};
-
-
-/**
- * Read Job(s) from Data Store
- *
- * @param {string} source
- * @param {string} destination
- */
-Client.prototype.read = function(source, destination) {
-  this._read(source, destination);
-};
-
-
-/**
- * Read Job(s) from Data Store in order of priority
- *
- * @param {string} source
- * @param {string} destination
- * @fires Client#error
- * @private
- */
-Client.prototype._read = function(source, destination) {
-  var self = this;
-
-  self._store.evalsha([self.redisCommandsSHA.prpoplpush, 6, source, destination, 'critical', 'high', 'medium', 'low'], function(err, data) {
-    if (err) self.emit('error', err);
-    self._push(data);
-  });
-};
-
-
-/**
- * Push Job to EventEmitter (readable)
- *
- * @fires Client#end
- * @fires Client#readable
- * @private
- */
-Client.prototype._push = function(job) {
-  var self = this;
-
-  if (!job) return self.close();
-
-  self.emit('readable', job);
-};
-
-
-/**
- * Pipe Job from source to destination
- *
- * Caution: This is NOT the same as Readable.pipe from NodeJS Streams
- *
- * @param {string} source
- * @param {string} destination
- * @param {Job} job
  * @param {function} [cb] optional
  * @fires Client#error
  */
-Client.prototype.pipe = function(source, destination, job, cb) {
+Client.prototype.closeJob = function(job, cb) {
   var self = this;
 
   if (!(job instanceof Job)) {
@@ -185,9 +230,9 @@ Client.prototype.pipe = function(source, destination, job, cb) {
     return self.emit('error', error);
   }
 
-  self._store.evalsha([self.redisCommandsSHA.plremlpush, 3, source, destination, job.meta.priority, 0, job], function(err, data) {
+  self.pipe('processing', 'done', job.meta.priority, job, function(err, res) {
     if (err) self.emit('error', err);
-    if ('function' === typeof cb) cb(err, data);
+    if ('function' === typeof cb) cb(err, res);
   });
 };
 
@@ -209,13 +254,13 @@ Client.prototype.getStatus = function(sources, cb) {
   if (!Array.isArray(sources)) sources = [sources];
 
   var queue = async.queue(function (source, callback) {
-    self._store.evalsha([self.redisCommandsSHA.pllen, 5, source, 'critical', 'high', 'medium', 'low'], function(err, data) {
+    self.size(source, function(err, res) {
       if (err) {
         error = err;
         return callback(err);
       }
       if ('undefined' === typeof status[source]) status[source] = {};
-      for (var i=0; i<data.length; i++) status[source][data[i]] = data[++i];
+      for (var i=0; i<res.length; i++) status[source][res[i]] = res[++i];
       callback();
     });
   }, 10);
