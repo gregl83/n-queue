@@ -9,8 +9,8 @@ client.on('error', function(err) {
   console.log('Client#error', err);
 });
 
-client.on('readable', function(job) {
-  console.log('Client#readable');
+client.on('data', function(job) {
+  console.log('Client#data');
   console.log(job);
 });
 
@@ -33,9 +33,7 @@ client.on('end', function() {
 
 var job = nQueue.createJob();
 
-job.setStatus('queued');
-
-client.write(job, function(err) {
+client.enqueueJobs(job, function(err) {
   if (err) console.log('client.write error', err);
   console.log('job written');
 

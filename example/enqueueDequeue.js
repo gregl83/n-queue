@@ -9,8 +9,8 @@ client.on('error', function(err) {
   console.log('Client#error', err);
 });
 
-client.on('readable', function(job) {
-  console.log('Client#readable');
+client.on('data', function(job) {
+  console.log('Client#data');
   console.log(job);
 });
 
@@ -23,9 +23,10 @@ client.on('end', function() {
   console.log('Client#end');
 
   // cleanup store
-  client._store.del('queued:medium', 'done:medium');
+  client._store.del('queued:medium', 'processing:medium');
 
   console.log('closing client');
+  client._store.quit();
 });
 
 
@@ -34,11 +35,15 @@ var job = nQueue.createJob();
 
 job.setStatus('queued');
 
-client.write(job, function(err) {
+client.enqueueJobs(job, function(err) {
   if (err) console.log('client.write error', err);
   console.log('job written');
 
-  client.pipe('queued', 'done', job);
+  client.dequeueJob();
 
-  client.close();
+  console.log('read called');
+
+  client.dequeueJob();
+
+  console.log('read called');
 });
