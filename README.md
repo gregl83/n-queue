@@ -4,7 +4,25 @@
 
 NodeJS Redis Queue
 
-In Development
+**in developemnt**
+
+Alpha Release Scheduled For May 2015
+
+todo
+
+## Requirements
+
+- NodeJS v0.10.x or higher
+- NPM
+- Redis v2.8.x or higher
+
+See `./package.json`
+
+## Installation
+
+Source available on [GitHub](https://github.com/gregl83/n-queue) or install module via NPM:
+
+    $ npm install n-queue
 
 ## License
 
