@@ -158,7 +158,7 @@ Client.prototype.size = function(source, cb) {
 /**
  * Enqueue Job (to data store)
  *
- * @param {job|{job}[]} jobs
+ * @param {Job|{Job}[]} jobs
  * @param {function} [cb] optional
  * @fires Client#error
  * @async
@@ -215,7 +215,7 @@ Client.prototype.dequeueJob = function() {
 /**
  * Close Job (in data store)
  *
- * @param {job} job
+ * @param {Job} job
  * @param {function} [cb] optional
  * @fires Client#error
  */
@@ -229,6 +229,9 @@ Client.prototype.closeJob = function(job, cb) {
 
     return self.emit('error', error);
   }
+
+  if (job.meta.error.length) job.setPriority('fail');
+  else job.setPriority('success');
 
   self.pipe('processing', 'done', job.meta.priority, job, function(err, res) {
     if (err) self.emit('error', err);

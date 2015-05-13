@@ -331,6 +331,7 @@ describe('client', function() {
 
     var job = new Job();
 
+    var setPriority = sandbox.stub(job, 'setPriority');
     var pipe = sandbox.spy(client, 'pipe');
     var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, 1);
 
@@ -340,6 +341,46 @@ describe('client', function() {
     client.closeJob(job, function(err, data) {
       should(err).be.null;
       (data).should.be.one;
+
+      sinon.assert.calledOnce(setPriority);
+      sinon.assert.calledWithExactly(setPriority, 'success');
+
+      sinon.assert.calledOnce(pipe);
+      sinon.assert.calledWithExactly(pipe, source, destination, job.meta.priority, job, sinon.match.func);
+
+      sinon.assert.calledOnce(evalsha);
+      sinon.assert.calledWithExactly(evalsha, ['_plremlpush', 3, source, destination, job.meta.priority, 0, job], sinon.match.func);
+
+      sinon.assert.notCalled(onError);
+
+      done();
+    });
+  });
+
+  it('close job with error', function(done) {
+    var source = 'processing';
+    var destination = 'done';
+
+    var client = new Client("127.0.0.1", 6379, 'queue', {});
+
+    var error = new Error('job error');
+
+    var job = new Job();
+    job.setError(error);
+
+    var setPriority = sandbox.stub(job, 'setPriority');
+    var pipe = sandbox.spy(client, 'pipe');
+    var evalsha = sandbox.stub(client._store, 'evalsha').callsArgWith(1, null, 1);
+
+    var onError = sinon.spy();
+    client.on('error', onError);
+
+    client.closeJob(job, function(err, data) {
+      should(err).be.null;
+      (data).should.be.one;
+
+      sinon.assert.calledOnce(setPriority);
+      sinon.assert.calledWithExactly(setPriority, 'fail');
 
       sinon.assert.calledOnce(pipe);
       sinon.assert.calledWithExactly(pipe, source, destination, job.meta.priority, job, sinon.match.func);

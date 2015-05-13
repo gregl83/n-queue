@@ -189,6 +189,31 @@ describe('job', function() {
     done();
   });
 
+  it('set error', function(done) {
+    var job = new Job();
+
+    var error = new Error();
+
+    job.setError(error);
+
+    (job.meta.error[0]).should.be.eql(error);
+    (job.meta.error).should.have.length(1);
+
+    done();
+  });
+
+  it('set invalid error', function(done) {
+    var job = new Job();
+
+    var error = 'invalid';
+
+    should.throws(function() {
+      job.setError(error);
+    });
+
+    done();
+  });
+
   it('to JSON string', function(done) {
     var oldJob = {meta: {/* meta in array */}, data: {/* data in array */}};
     var jobString = JSON.stringify(oldJob);

@@ -70,7 +70,9 @@ Job.priorities = [
   'critical',
   'high', // default
   'medium',
-  'low'
+  'low',
+  'fail',
+  'success'
 ];
 
 
@@ -170,6 +172,23 @@ Job.prototype.setStatus = function(status) {
       date: [new Date()]
     });
   }
+};
+
+
+/**
+ * Set job error
+ *
+ * Note: multiple errors can be set on a single job
+ *
+ * @param {Error} error
+ * @throws error
+ */
+Job.prototype.setError = function(error) {
+  var self = this;
+
+  if (!(error instanceof Error)) throw new Error('error must be instance of Error');
+
+  self.meta.error.push(error);
 };
 
 
